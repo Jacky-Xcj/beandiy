@@ -125,6 +125,7 @@
     <div class="topbar-right">
       <span class="badge" id="modeBadge" title="正在检测写权限">检测中…</span>
       <span class="sync" id="syncTime">—</span>
+      <button class="btn btn-ghost btn-sm no-print" id="cfgBtn" onclick="openSettings()" title="配置数据仓库与令牌">⚙ 设置</button>
       <button class="btn btn-ghost btn-sm no-print" onclick="reload()">↻ 刷新</button>
     </div>
   </div>
@@ -252,7 +253,11 @@
   <div id="modalRoot" class="hidden"></div>
 
   <script>
-    // ============ 经服务器代理访问 GitHub 数据（同源 /api/*.php）============
+    // ============ 数据层：两种后端，启动时自动探测 ============
+    //   ① proxy  同源 PHP 代理 /api/*.php —— 自备服务器时用；令牌存服务器（PAT-A），浏览器不持有令牌
+    //   ② direct 浏览器直连 GitHub Contents API —— 无服务器部署（GitHub Pages / 直接打开文件）
+    // direct 模式下：读公开仓库**无需令牌**；写操作需在「⚙ 设置」里填一次 fine-grained PAT
+    // （PAT-B，权限 Contents: Read and write、Path 限 repo/data/**），仅存本机 localStorage，不上传任何服务器。
     const PAGE_SIZE = 20;
     const TABS = ['overview','stations','active','history','qr','settings'];
     let currentTab = 'overview';
@@ -262,9 +267,33 @@
     let adminKey = null;       // 仅内存缓存，写操作遇 403 时由用户临时输入
     let busy = false;          // 写操作进行中，避免重复提交
     let extendingId = null;    // 当前正在续时的会话 id
+    let BACKEND = 'detecting'; // 'proxy' | 'direct'
+    let PAT = '';              // direct 模式下的 GitHub 令牌（来自 localStorage）
+    const FILES = { stations: 'stations.json', sessions: 'sessions.json', settings: 'settings.json' };
+    const GH_DEFAULT = {
+      owner: 'Jacky-Xcj', repo: 'beandiy', branch: 'main',
+      dir: 'repo/data/', base: 'https://api.github.com'
+    };
 
-    // ---------- 后端接口 ----------
+    // ---------- 本机配置（localStorage；测试/企业版可用 bean_gh.base 覆盖 API 基址）----------
+    function lsGet(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
+    function lsSet(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) { /* 隐私模式下不可用 */ } }
+    function ghCfg() {
+      let o = {};
+      try { o = JSON.parse(lsGet('bean_gh', '{}')) || {}; } catch (e) { o = {}; }
+      const pick = function (k) { return o[k] || GH_DEFAULT[k]; };
+      let dir = String(pick('dir'));
+      if (dir && dir.charAt(dir.length - 1) !== '/') dir += '/';
+      return {
+        owner: pick('owner'), repo: pick('repo'), branch: pick('branch'), dir: dir,
+        base: String(pick('base')).replace(/\/+$/, '')
+      };
+    }
+    function safeReload() { if (typeof location.reload === 'function') location.reload(); }
+
+    // ---------- 后端接口（对外统一：apiGet / apiPut，按 BACKEND 分流）----------
     async function apiGet(f) {
+      if (BACKEND === 'direct') return ghGet(f);
       const res = await fetch('/api/' + f + '.php', { cache: 'no-store' });
       let json = null;
       try { json = await res.json(); } catch (e) { /* 非 JSON */ }
@@ -273,6 +302,7 @@
     }
 
     async function apiPut(f, obj) {
+      if (BACKEND === 'direct') return ghPut(f, obj);
       const doFetch = (key) => {
         const h = { 'Content-Type': 'application/json' };
         if (key) h['X-Admin-Key'] = key;
@@ -290,6 +320,160 @@
         throw new Error((json && json.error) || ('HTTP ' + res.status));
       }
       return json || {};
+    }
+
+    // ---------- 启动探测：有同源 PHP 代理就走代理，否则浏览器直连 GitHub ----------
+    async function detectBackend() {
+      PAT = lsGet('bean_pat', '');
+      if (lsGet('bean_mode', '') === 'direct') { BACKEND = 'direct'; return; }
+      try {
+        const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+        const timer = ctl ? setTimeout(function () { ctl.abort(); }, 2500) : null;
+        const res = await fetch('/api/settings.php', { cache: 'no-store', signal: ctl ? ctl.signal : undefined });
+        if (timer) clearTimeout(timer);
+        if (res && res.ok) { BACKEND = 'proxy'; return; }
+      } catch (e) { /* 无同源 PHP 代理（静态托管 / file:// 打开） */ }
+      BACKEND = 'direct';
+    }
+
+    // ---------- direct 模式：浏览器直连 GitHub Contents API ----------
+    function b64encode(str) {
+      const bytes = new TextEncoder().encode(str);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin);
+    }
+    function b64decode(b64) {
+      const bin = atob(String(b64 || '').replace(/\s/g, ''));
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return new TextDecoder('utf-8').decode(bytes);
+    }
+    async function ghFetch(url, opts) {
+      const o = opts || {};
+      const h = { 'Accept': 'application/vnd.github+json' };
+      if (PAT) h['Authorization'] = 'Bearer ' + PAT;
+      if (o.body) h['Content-Type'] = 'application/json';
+      const res = await fetch(url, { method: o.method || 'GET', headers: h, body: o.body, cache: 'no-store' });
+      let json = null;
+      try { json = await res.json(); } catch (e) { /* 非 JSON */ }
+      return { res: res, json: json };
+    }
+    function ghErr(r) {
+      const m = r.json && (r.json.message || r.json.error);
+      return new Error(m || ('HTTP ' + r.res.status));
+    }
+    function ghContentUrl(f) {
+      const c = ghCfg();
+      return c.base + '/repos/' + c.owner + '/' + c.repo + '/contents/' + c.dir + FILES[f];
+    }
+
+    async function ghGet(f) {
+      const c = ghCfg();
+      const r = await ghFetch(ghContentUrl(f) + '?ref=' + c.branch);
+      if (r.res.status === 404) {
+        // 私有仓库未带令牌时 GitHub 也返回 404，需要给出可操作的提示
+        if (!PAT) throw new Error('读取失败（404）：仓库或数据路径不存在；若该仓库为私有，请在「⚙ 设置」填入令牌');
+        return { data: f === 'settings' ? {} : [], writable: true, mode: 'direct' };
+      }
+      if (r.res.status === 401 || r.res.status === 403) {
+        throw new Error('令牌无效或权限不足：需 fine-grained PAT，Contents = Read and write，Path 限 ' + c.dir + '**');
+      }
+      if (!r.res.ok) throw ghErr(r);
+      let data;
+      try { data = JSON.parse(b64decode(r.json.content || '')); }
+      catch (e) { throw new Error(FILES[f] + ' 内容不是合法 JSON'); }
+      return { data: data, writable: !!PAT, mode: 'direct' };
+    }
+
+    async function ghPut(f, obj) {
+      if (!PAT) throw new Error('只读模式：请在右上角「⚙ 设置」填入 GitHub 令牌（PAT-B）后再操作');
+      const c = ghCfg();
+      const url = ghContentUrl(f);
+      // 序列化必须与服务器/PHP 版一致（4 空格缩进 + 结尾换行），否则每次改动都会整文件重写
+      const content = b64encode(JSON.stringify(obj, null, 4) + '\n');
+      const attempt = async function () {
+        let sha = null;
+        const cur = await ghFetch(url + '?ref=' + c.branch);
+        if (cur.res.ok && cur.json && cur.json.sha) sha = cur.json.sha;
+        const payload = { message: 'admin update ' + FILES[f], content: content, branch: c.branch };
+        if (sha) payload.sha = sha;
+        return ghFetch(url, { method: 'PUT', body: JSON.stringify(payload) });
+      };
+      let r = await attempt();
+      // 409/422：他人刚写过导致 sha 过期 —— 重取 sha 再试一次
+      if (r.res.status === 409 || r.res.status === 422) r = await attempt();
+      if (r.res.status === 401 || r.res.status === 403) {
+        throw new Error('写入被拒：令牌无效、已过期或权限不足（需 Contents = Read and write，Path 限 ' + c.dir + '**）');
+      }
+      if (!r.res.ok) throw ghErr(r);
+      return { ok: true };
+    }
+
+    // ---------- 连接设置弹窗 ----------
+    function updateCfgBtn() {
+      const b = document.getElementById('cfgBtn');
+      if (!b) return;
+      if (BACKEND === 'direct') {
+        b.textContent = PAT ? '🔑 令牌已配' : '⚙ 设置令牌';
+        b.title = PAT ? '已配置 GitHub 令牌（仅存本机浏览器）' : '未配置令牌：当前只读。点此填入 PAT-B 即可增删改';
+      } else {
+        b.textContent = '⚙ 设置';
+        b.title = '代理模式：令牌配置在服务器 repo/api/config.php';
+      }
+    }
+    function openSettings() {
+      const c = ghCfg();
+      const isDirect = BACKEND === 'direct';
+      showModal({
+        title: '连接设置',
+        body:
+          '<p class="label" style="margin-bottom:4px">当前后端：' +
+            (isDirect ? '浏览器直连 GitHub（无服务器部署）' : '同源服务器代理 /api/*.php') + '</p>' +
+          (isDirect
+            ? '<div style="display:grid;gap:10px;margin-top:12px">' +
+                '<div><span class="label">数据仓库（owner/repo）</span><input id="cfgRepo" value="' +
+                  esc(c.owner + '/' + c.repo) + '" /></div>' +
+                '<div><span class="label">数据目录</span><input id="cfgDir" value="' + esc(c.dir) + '" /></div>' +
+                '<div><span class="label">分支</span><input id="cfgBranch" value="' + esc(c.branch) + '" /></div>' +
+                '<div><span class="label">GitHub 令牌（留空 = 只读）</span><input id="cfgPat" type="password" placeholder="github_pat_…" value="' +
+                  (PAT ? '••••••••' : '') + '" /></div>' +
+                '<p class="label" style="line-height:1.6">令牌只保存在本机浏览器（localStorage），不会上传任何服务器。<br />' +
+                '权限只需 <b>Contents: Read and write</b> + Path 限 <code>' + esc(c.dir) + '**</code>。<br />' +
+                '建议只在店内自有设备上使用；公用电脑请用后点「清除令牌」。</p>' +
+              '</div>'
+            : '<p class="label" style="line-height:1.6;margin-top:10px">代理模式下令牌保存在服务器的 ' +
+                '<code>repo/api/config.php</code>，本页无需填写。</p>'),
+        okText: '保存',
+        onOk: function () {
+          if (isDirect) {
+            const rp = String(document.getElementById('cfgRepo').value || '').trim();
+            const dir = String(document.getElementById('cfgDir').value || '').trim();
+            const br = String(document.getElementById('cfgBranch').value || '').trim() || 'main';
+            const pat = String(document.getElementById('cfgPat').value || '').trim();
+            const parts = rp.split('/');
+            lsSet('bean_gh', JSON.stringify({
+              owner: (parts[0] || GH_DEFAULT.owner).trim(),
+              repo: (parts[1] || GH_DEFAULT.repo).trim(),
+              branch: br,
+              dir: dir || GH_DEFAULT.dir
+            }));
+            if (pat && pat !== '••••••••') lsSet('bean_pat', pat);
+          }
+          closeModal();
+          safeReload();
+        }
+      });
+      if (isDirect) {
+        const foot = document.querySelector ? document.querySelector('.modal-foot') : null;
+        if (foot) {
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-ghost';
+          btn.textContent = '清除令牌';
+          btn.onclick = function () { lsSet('bean_pat', ''); safeReload(); };
+          foot.insertBefore(btn, foot.firstChild);
+        }
+      }
     }
 
     // ---------- 工具函数 ----------
@@ -410,6 +594,7 @@
     function updateModeBadge(writable, mode) {
       const el = document.getElementById('modeBadge');
       const notice = document.getElementById('modeNotice');
+      const direct = mode === 'direct';
       if (writable === true && mode === 'local') {
         el.className = 'badge badge-local';
         el.textContent = '⚠ 本地预览';
@@ -420,22 +605,29 @@
           '运行 <code>curl -X POST http://' + location.host + '/__local/reset</code> 可清空本地改动、回到仓库真实数据。';
       } else if (writable === true) {
         el.className = 'badge badge-ok';
-        el.textContent = '✓ 可写';
-        el.title = '后端已配置令牌，本页的增删改会真正写入数据仓库';
+        el.textContent = direct ? '✓ 直连可写' : '✓ 可写';
+        el.title = direct
+          ? '浏览器直连 GitHub 且已配置令牌：本页的增删改会真正写入数据仓库'
+          : '后端已配置令牌，本页的增删改会真正写入数据仓库';
         notice.className = 'notice hidden';
       } else if (writable === false) {
         el.className = 'badge badge-ro';
-        el.textContent = '🔒 只读';
-        el.title = '后端未配置令牌（pat_a），当前只能查看。请在服务器 repo/api/config.php 填入 PAT-A 后重启服务。';
+        el.textContent = direct ? '🔒 直连只读' : '🔒 只读';
+        el.title = direct ? '浏览器直连 GitHub，但未配置令牌，当前只能查看' : '后端未配置令牌（pat_a），当前只能查看';
         notice.className = 'notice';
-        notice.innerHTML = '当前是 <b>只读模式</b>：后端未配置令牌（<code>pat_a</code>），只能查看数据。' +
-          '请在服务器 <code>repo/api/config.php</code> 填入 PAT-A 后重启服务，即可增删改与续时。';
+        notice.innerHTML = direct
+          ? '当前是 <b>只读模式</b>（浏览器直连 GitHub、未配置令牌）：只能查看数据。' +
+            '点右上角 <b>⚙ 设置令牌</b> 填入 GitHub 令牌后即可增删改与续时 —— ' +
+            '权限只需 <b>Contents: Read and write</b>，Path 限 <code>repo/data/**</code>，令牌仅存本机浏览器。'
+          : '当前是 <b>只读模式</b>：后端未配置令牌（<code>pat_a</code>），只能查看数据。' +
+            '请在服务器 <code>repo/api/config.php</code> 填入 PAT-A 后重启服务，即可增删改与续时。';
       } else {
         el.className = 'badge';
         el.textContent = '? 状态未知';
         el.title = '后端未上报可写状态（可能是旧版本接口）';
         notice.className = 'notice hidden';
       }
+      updateCfgBtn();
     }
 
     // ============ 数据加载 ============
@@ -950,13 +1142,18 @@
         if (!opts.skipSettings) renderSettings();
         if (!opts.silent) toast('数据已加载');
       } catch (e) {
-        if (!opts.silent) toast('加载失败：' + e.message + '（请检查服务器代理与网络）');
+        if (!opts.silent) toast('加载失败：' + e.message +
+          (BACKEND === 'direct' ? '（请检查网络与「⚙ 设置」中的仓库配置）' : '（请检查服务器代理与网络）'));
       }
     }
 
     async function init() {
-      document.getElementById('repoSub').textContent =
-        '经服务器代理（' + location.host + '）· 数据存于 GitHub 仓库 repo/data/*.json';
+      await detectBackend();
+      const c = ghCfg();
+      document.getElementById('repoSub').textContent = BACKEND === 'direct'
+        ? '浏览器直连 GitHub · ' + c.owner + '/' + c.repo + ' · 数据目录 ' + c.dir
+        : '经服务器代理（' + location.host + '）· 数据存于 GitHub 仓库 repo/data/*.json';
+      updateCfgBtn();
       await reload({ silent: true, skipSettings: false });
       // 常开后自动同步（1 分钟一次），跳过设置页以免打断编辑
       setInterval(function () {

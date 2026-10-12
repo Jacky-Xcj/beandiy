@@ -1,16 +1,17 @@
 # 拼豆工坊（BeanDIY）
 
-扫码登记、计时使用、到时提醒的拼豆店小程序。**混合部署**：自有服务器托管管理网页并做鉴权代理，GitHub 仅作数据库。
+扫码登记、计时使用、到时提醒的拼豆店小程序。**GitHub 仓库即数据库**；管理网页是单文件静态页面，支持两种部署：**方案 A 无服务器**（GitHub Pages，浏览器直连 GitHub API）或**方案 B 自备 PHP 代理**（令牌不下发到浏览器）。
 
-> 核心安全改进：Fine-grained PAT **只存在服务器**，不再进入浏览器/小程序包（小程序因微信域名备案限制，暂用一把仅限 `repo/data/**` 的最小权限 PAT 直连，见下文）。
+> 安全底线：小程序与管理网页都只用一把 **仅限 `repo/data/**` 读写**的 fine-grained PAT（PAT-B）。
+> 采纳方案 A 时**不需要** PAT-A；采纳方案 B 时 PAT-A 只存在服务器，永不进入浏览器。
 
 ## 项目矩阵
 
 | 部分 | 位置 | 技术 | 职责 |
 |------|------|------|------|
 | **用户端小程序** | `miniapp/` | 微信小程序 | 扫码登记、计时、到时提醒（弱绑定微信昵称，不收集手机） |
-| **电脑管理网页** | `admin/index.html` + `index.html` | 纯 HTML/JS | 数据概览、台位占用总览、台位增删改、使用中会话与**续时（延长）**、强制结束、历史筛选与 CSV 导出、二维码打印、营业设置 |
-| **服务器代理** | `api/*.php` | PHP 8+ | 持有 PAT-A，校验请求，经 GitHub Contents API 读写数据 |
+| **电脑管理网页** | `repo/admin/index.html` | 纯 HTML/JS（单文件，零依赖） | 数据概览、台位占用总览、台位增删改、使用中会话与**续时（延长）**、强制结束、历史筛选与 CSV 导出、二维码打印、营业设置 |
+| **数据后端** | ① GitHub API 直连（默认）<br>② `repo/api/*.php`（可选） | 浏览器 / PHP 8+ | 读写 `repo/data/*.json`；PHP 代理仅在你选择方案 B 时启用 |
 | **后端数据存储** | `repo/data/*.json` + GitHub | GitHub 仓库即数据库 | 数据以 JSON 文件存于仓库 `repo/` 子目录 |
 
 > 客户数据采用**弱绑定**：仅记录微信昵称（授权时获取），不收集手机号。扫码即绑定桌号，授权微信登录即可开始计时。
@@ -19,11 +20,11 @@
 
 ```
 repo/                          # ← 本目录即提交到 GitHub 的全部可部署内容（miniapp/ 仅本地、不入库）
-├── index.html              # 入口页，跳转管理后台（由服务器托管）
+├── index.html              # 入口页，跳转管理后台（方案 A 下由 GitHub Pages 托管）
 ├── admin/
-│   ├── index.html          # 电脑管理网页（单文件，调用同源 /api/*.php）
+│   ├── index.html          # 电脑管理网页（单文件；自动探测 直连 GitHub / 同源 /api/*.php）
 │   └── beep.wav            # 到时提示音（经 jsDelivr CDN 提供给小程序）
-├── api/                    # 服务器 PHP 代理（需部署到你的服务器）
+├── api/                    # 【方案 B 可选】服务器 PHP 代理，不用服务器时可忽略整个目录
 │   ├── bootstrap.php       # 公共：配置加载 / GitHub 客户端 / 校验 / 限流
 │   ├── stations.php        # GET/PUT  repo/data/stations.json
 │   ├── sessions.php        # GET/PUT  repo/data/sessions.json
@@ -39,7 +40,8 @@ repo/                          # ← 本目录即提交到 GitHub 的全部可�
 └── README.md               # 本文件
 ```
 
-> 注意：微信小程序源码 `miniapp/` **仅存于本地、不提交 GitHub**（属客户端代码，且内含 PAT-B，不应公开）。本 `repo/` 目录才是入库内容；GitHub 仓库的树即 `repo/` 之下的这些文件。部署服务器时，把 `repo/` 内的 `admin/`、`api/`、`data/` 复制到 web 根即可（见下文步骤 3）。
+> 注意：微信小程序源码 `miniapp/` **仅存于本地、不提交 GitHub**（属客户端代码，且内含 PAT-B，不应公开）。本 `repo/` 目录才是入库内容；GitHub 仓库的树即 `repo/` 之下的这些文件。
+> **方案 A** 无需上传任何文件，开 Pages 即可；**方案 B** 才需要把 `admin/` 与 `api/` 复制到 web 根（见下文步骤 3）。
 
 ## 部署步骤
 
@@ -60,23 +62,48 @@ git push -u origin main
 
 | 名称 | Repository access | Permissions → Contents | Path 限制 | 存放位置 |
 |------|-------------------|------------------------|-----------|----------|
-| **PAT-A（服务器）** | 仅本仓库 `beandiy` | Read and write | 无（全仓库，含 `repo/data/**` 与 `repo/admin/`） | 服务器 `config.php`（**切勿进前端**） |
-| **PAT-B（小程序）** | 仅本仓库 `beandiy` | Read and write | **`repo/data/**`** | 小程序 `app.js` 的 `githubToken` |
+| **PAT-B（唯一必需）** | 仅本仓库 `beandiy` | Read and write | **`repo/data/**`** | 小程序 `app.js` 的 `githubToken`；管理网页在「⚙ 设置」里填同一把（只存本机浏览器） |
+| **PAT-A（可选，仅方案 B）** | 仅本仓库 `beandiy` | Read and write | 无（全仓库） | 服务器 `config.php`（**切勿进前端**） |
 
-> PAT-B 仅能读写 `repo/data/`，即便被反编译抠出也动不了 `stations`/`settings`，爆破半径被锁死。
+> **无服务器方案只需 PAT-B**：它只能读写 `repo/data/**`，即便小程序包被反编译抠出，也动不了代码与配置，爆破半径被锁死。
+> PAT-A 只有在你后面启用自备 PHP 服务器（方案 B）时才需要。
 
-### 3. 部署服务器（PHP 代理 + 管理网页）
+### 3. 部署管理后台（二选一）
 
-1. 服务器安装 PHP 8.x + Web 服务器（nginx + php-fpm，或 `php -S` 仅测试）。
-2. 把本仓库 `repo/` 下的 `admin/` 与 `api/` 放到 web 根下（如 `/var/www/bean/`），使：
+管理后台是**单文件静态页面**，内置两套数据后端并在打开时自动探测，所以两种部署方式都不用改代码：
+
+| | 方案 A：无服务器（推荐起步） | 方案 B：自备 PHP 服务器（可选） |
+|---|---|---|
+| 做法 | 开 GitHub Pages，用浏览器直连 GitHub API | 上传 `admin/` + `api/`，由 PHP 代理读写 |
+| 地址 | `https://你的用户名.github.io/beandiy/repo/admin/` | `https://你的域名/admin/` |
+| 令牌 | 首次打开点「⚙ 设置」填 PAT-B，**只存本机浏览器** | 存服务器 `repo/api/config.php`（PAT-A），浏览器不持有 |
+| 优点 | 零成本、零运维、不用域名备案 | 令牌不下发到浏览器；可加 `admin_key` 二次校验、限流 |
+| 备注 | 页面与数据同在一个仓库，**仓库为公开**时数据也可被匿名读取 | 需要一台支持 PHP 的机器（或后续备案后迁移） |
+
+#### 方案 A：无服务器（GitHub Pages 直连）
+
+1. 仓库 → **Settings → Pages** → Source 选 **Deploy from a branch** → Branch `main`、目录 `/ (root)` → Save。
+2. 等 1 分钟左右，访问 `https://你的用户名.github.io/beandiy/repo/admin/`。
+3. 打开时是**只读**（能看数据）；点右上角 **⚙ 设置** → 填入 **PAT-B** → 保存，即变为「✓ 直连可写」，可增删台位、续时、改设置。
+4. 令牌只保存在该浏览器（localStorage），不会出现在页面源码里；**公用电脑用完请点「清除令牌」**。
+
+> 也可以直接双击本地 `repo/admin/index.html` 打开（无需 Pages）。但浏览器对 `file://` 的跨域策略各版本不一致，**建议用 Pages** 更稳。
+
+#### 方案 B：自备 PHP 代理（可选）
+
+1. 服务器安装 PHP 8.x（需 `curl` 扩展）+ Web 服务器（nginx + php-fpm，或 `php -S` 仅测试）。
+2. 把 `repo/` 下的 `admin/` 与 `api/` 放到 web 根下（如 `/var/www/bean/`），使：
    - 管理网页地址：`https://你的域名或IP/admin/`
    - 接口地址：`https://你的域名或IP/api/stations.php` 等
 3. 配置 `config.php`：
-   - 复制 `api/config.sample.php` 为 `api/config.php`（或被环境变量 `BEAN_CONFIG` 指向的路径）。
+   - 复制 `api/config.sample.php` 到 `/etc/bean/config.php`（或由环境变量 `BEAN_CONFIG` 指向的路径）。
    - 填写 `owner` / `repo` / `pat_a`（即 **PAT-A**）。
-   - **生产建议**：把真实 `config.php` 移到 web 根之外（如 `/etc/bean/config.php`），并 `chmod 600`、属主为 Web 进程用户，避免被直接下载。
+   - 放到 web 根之外，并 `chmod 600`、属主为 Web 进程用户，避免被直接下载。
    - （可选）`admin_key` 填一个随机串；启用后所有写操作需在请求头带 `X-Admin-Key: 该串`（管理网页在 403 时会自动弹窗索取）。
-4. 确认 `api/config.php` 不被 Web 直接访问（浏览器访问应 404/403，而非下载）。
+4. 确认浏览器访问 `/api/config.php` 返回 404/403 而非下载内容。
+
+> 页面的后端探测：能访问到同源 `/api/settings.php` 就走方案 B，否则自动切方案 A。
+> 也可在「⚙ 设置」前手动锁定模式（localStorage 写 `bean_mode=direct` 强制走直连）。
 
 > 服务器是否需备案：管理网页通过浏览器访问，**不强制备案**即可用（公网 IP 直连亦可，仅自签/无证书时有浏览器警告）。但为稳定与信任，建议仍配备案域名 + HTTPS 证书。
 
@@ -153,9 +180,10 @@ globalData: {
 
 ## 安全小结
 
-- **PAT 永不出浏览器**：管理后台的所有写操作经服务器 `/api`，PAT-A 只在服务器。
-- **最小权限**：小程序 PAT-B 仅限 `repo/data/**`，泄露影响可控。
-- **服务端校验**：`api/*.php` 校验字段、限流；可选 Admin Key 闸门。
-- **无状态代理**：服务器不落本地库，需保护面更小。
+- **最小权限**：全项目只用一把 PAT-B，权限仅 **`repo/data/**` 读+写**。即便小程序包被反编译、或管理网页所在设备被翻出令牌，也**动不了代码、配置与其它文件**。
+- **令牌不进仓库**：管理网页源码、小程序包里都**不含任何令牌**（管理网页的令牌存在浏览器 localStorage，需当场输入）。
+- **方案 B 额外收益**：令牌只存服务器 `config.php`（web 根之外、`chmod 600`），浏览器完全不持有；服务端还可做字段校验、限流与可选 Admin Key 闸门。
+- **XSS 防护**：管理网页所有数据插值均经 `esc()` 转义，避免台位名/昵称注入脚本（否则可窃取 localStorage 中的令牌）。
+- **公开仓库提醒**：若仓库为 **public**，`repo/data/*.json`（含顾客昵称与使用记录）可被任何人匿名读取。如需数据私密，把数据文件放到**独立的私有仓库**，再在管理网页「⚙ 设置」里把数据仓库指向它（小程序 `app.js` 的 `githubRepo` 同步改）——注意这样会失去 Pages 直连读取的免令牌便利。
 
 详细威胁分析与部署/安全清单见 `docs/混合架构方案.md`。
