@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拼豆工坊 · 管理后台</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+           background: #f5f6fa; color: #2c3e50; font-size: 14px; }
+    .topbar { background: linear-gradient(135deg, #ff6b9d 0%, #ff8e72 100%); color: #fff;
+              padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .topbar h1 { font-size: 18px; font-weight: 600; }
+    .topbar .sub { font-size: 12px; opacity: .85; margin-top: 2px; }
+    .tabs { display: flex; background: #fff; border-bottom: 1px solid #eee; overflow-x: auto; }
+    .tabs button { flex: 0 0 auto; padding: 14px 16px; border: none; background: none; font-size: 14px;
+                   color: #888; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+    .tabs button.active { color: #ff6b9d; border-bottom-color: #ff6b9d; font-weight: 600; }
+    .container { max-width: 900px; margin: 20px auto; padding: 0 14px; }
+    .card { background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 12px; }
+    .stat { background: #fafafa; border-radius: 10px; padding: 16px; text-align: center; }
+    .stat .num { font-size: 26px; font-weight: 700; color: #ff6b9d; }
+    .stat .lab { font-size: 12px; color: #999; margin-top: 4px; }
+    .section-title { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #f0f0f0; }
+    th { color: #999; font-weight: 500; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+    .tag-idle { background: #e8f5e9; color: #2e7d32; }
+    .tag-inuse { background: #fff3e0; color: #e65100; }
+    .tag-over { background: #ffebee; color: #c62828; }
+    .btn { border: none; border-radius: 8px; padding: 9px 16px; font-size: 13px; cursor: pointer; }
+    .btn-primary { background: #ff6b9d; color: #fff; }
+    .btn-ghost { background: #f0f0f0; color: #555; }
+    .btn-danger { background: #ffebee; color: #c62828; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    .row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .row > div { flex: 1; min-width: 140px; }
+    .label { font-size: 12px; color: #999; margin-bottom: 4px; display: block; }
+    .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 16px; }
+    .qr-item { text-align: center; border: 1px solid #eee; border-radius: 10px; padding: 14px; }
+    .qr-item img { width: 130px; height: 130px; }
+    .qr-item .name { font-weight: 600; margin: 8px 0 2px; }
+    .qr-item .code { font-size: 11px; color: #999; word-break: break-all; }
+    .empty { text-align: center; color: #bbb; padding: 40px 0; }
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+             background: rgba(0,0,0,.8); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 200; }
+    .modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex;
+                  align-items: center; justify-content: center; z-index: 100; }
+    .modal { background: #fff; border-radius: 14px; padding: 22px; width: 360px; max-width: 92%; }
+    .modal h3 { margin-bottom: 14px; }
+    .warn { background: #fff8e1; border: 1px solid #ffe082; color: #8d6e00;
+            border-radius: 8px; padding: 10px 12px; font-size: 12px; margin-bottom: 14px; line-height: 1.5; }
+    .pager { display: flex; justify-content: center; gap: 12px; align-items: center; margin-top: 14px; }
+    .hidden { display: none !important; }
+    .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 130px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+    .bar { width: 60%; background: #ff6b9d; border-radius: 4px 4px 0 0; min-height: 2px; transition: height .3s; }
+    .bar-lab { font-size: 10px; color: #999; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <h1>🎨 拼豆工坊 · 管理后台</h1>
+      <div class="sub" id="repoSub">经服务器代理 · 数据存于 GitHub 仓库</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button data-tab="overview" class="active" onclick="switchTab('overview')">概览</button>
+    <button data-tab="stations" onclick="switchTab('stations')">台位</button>
+    <button data-tab="active" onclick="switchTab('active')">使用中</button>
+    <button data-tab="history" onclick="switchTab('history')">历史</button>
+    <button data-tab="qr" onclick="switchTab('qr')">二维码</button>
+    <button data-tab="settings" onclick="switchTab('settings')">设置</button>
+  </div>
+
+  <div class="container">
+    <div id="tab-overview">
+      <div class="card">
+        <div class="section-title">今日数据</div>
+        <div class="grid" id="overviewStats"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">近 7 天使用趋势</div>
+        <div class="bar-chart" id="trendChart"></div>
+      </div>
+    </div>
+
+    <div id="tab-stations" class="hidden">
+      <div class="card">
+        <div class="section-title">添加台位</div>
+        <div class="row">
+          <div><span class="label">台位名称</span><input id="newStationName" placeholder="如 A1 拼豆台位" /></div>
+          <div><span class="label">台位编码（扫码使用）</span><input id="newStationCode" placeholder="如 BEANDIY-STATION-06" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="addStation()">+ 添加台位</button>
+      </div>
+      <div class="card">
+        <div class="section-title">全部台位</div>
+        <table><thead><tr><th>名称</th><th>编码</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="stationsTable"></tbody></table>
+      </div>
+    </div>
+
+    <div id="tab-active" class="hidden">
+      <div class="card">
+        <div class="section-title">当前使用中（每 5 秒刷新）</div>
+        <table><thead><tr><th>台位</th><th>用户</th><th>已用</th><th>剩余</th><th>操作</th></tr></thead>
+          <tbody id="activeTable"></tbody></table>
+      </div>
+    </div>
+
+    <div id="tab-history" class="hidden">
+      <div class="card">
+        <div class="section-title">使用记录</div>
+        <table><thead><tr><th>台位</th><th>用户</th><th>开始</th><th>时长</th><th>费用</th></tr></thead>
+          <tbody id="historyTable"></tbody></table>
+        <div class="pager">
+          <button class="btn btn-ghost" onclick="changePage(-1)">上一页</button>
+          <span id="pageInfo">1 / 1</span>
+          <button class="btn btn-ghost" onclick="changePage(1)">下一页</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-qr" class="hidden">
+      <div class="card">
+        <div class="section-title">台位二维码（打印后张贴，顾客在小程序内扫码登记）</div>
+        <div style="margin-bottom:12px;">
+          <button class="btn btn-ghost" onclick="window.print()">🖨 打印全部</button>
+        </div>
+        <div class="qr-grid" id="qrGrid"></div>
+        <p style="font-size:12px;color:#999;margin-top:12px;line-height:1.6;">
+          二维码内容为台位编码（如 <code>BEANDIY-STATION-01</code>）。顾客打开拼豆小程序 → 点「扫码登记使用」→ 扫此码即可自动识别台位。
+        </p>
+      </div>
+    </div>
+
+    <div id="tab-settings" class="hidden">
+      <div class="card">
+        <div class="section-title">营业设置</div>
+        <div class="row">
+          <div><span class="label">每小时价格（元）</span><input id="setPrice" type="number" /></div>
+          <div><span class="label">默认使用时长（分钟）</span><input id="setDefault" type="number" /></div>
+        </div>
+        <div class="row">
+          <div><span class="label">到时前提醒（分钟，0=不提醒）</span><input id="setRemind" type="number" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">保存设置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 配置弹窗已移除：令牌仅存于服务器，不再进入浏览器 -->
+
+  <script>
+    // ============ 经服务器 PHP 代理访问 GitHub 数据（同源 /api/*.php）============
+    const PAGE_SIZE = 20;
+    let historyPage = 1;
+    let activeTimer = null;
+    let cache = { stations: [], sessions: [], settings: {} };
+    let adminKey = null; // 仅内存缓存，写操作遇 403 时由用户临时输入
+
+    const API = {
+      get: (f) => fetch('/api/' + f + '.php').then(r => r.json()).then(d => d.data),
+      put: async (f, obj) => {
+        const doFetch = (key) => {
+          const h = { 'Content-Type': 'application/json' };
+          if (key) h['X-Admin-Key'] = key;
+          return fetch('/api/' + f + '.php', { method: 'PUT', headers: h, body: JSON.stringify(obj) });
+        };
+        let res = await doFetch(adminKey);
+        if (res.status === 403 && !adminKey) {
+          adminKey = prompt('请输入管理密钥（Admin Key）：');
+          if (adminKey) res = await doFetch(adminKey);
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      }
+    };
+
+    // GitHub 直连逻辑已移至服务器端 api/*.php（PAT 不再进浏览器）
+
+    async function loadAll() {
+      const [st, se, set] = await Promise.all([
+        API.get('stations'),
+        API.get('sessions'),
+        API.get('settings').catch(() => ({}))
+      ]);
+      cache.stations = st || [];
+      cache.sessions = se || [];
+      cache.settings = (set && typeof set === 'object') ? set : { price_per_hour: 30, default_minutes: 60, reminder_minutes: 10 };
+    }
+
+    // ============ 工具函数 ============
+    function todayStr() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+    function dateOf(iso) {
+      const d = new Date(iso);
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+    function fmtTime(iso) {
+      if (!iso) return '--';
+      const d = new Date(iso);
+      return String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0') + ' ' +
+             String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    }
+    function fmtDur(min) {
+      min = Math.round(min || 0);
+      const h = Math.floor(min/60), m = min%60;
+      return h > 0 ? (h + '时' + (m ? m + '分' : '')) : (m + '分');
+    }
+    function feeOf(s) {
+      const mins = s.actual_minutes != null ? s.actual_minutes : s.planned_minutes;
+      const price = parseFloat(cache.settings.price_per_hour || 30);
+      return '¥' + (mins / 60 * price).toFixed(1);
+    }
+    function toast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast'; t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 1800);
+    }
+    function stationName(id) {
+      const s = cache.stations.find(x => x.id === id);
+      return s ? s.name : ('台位#' + id);
+    }
+    function nextId(arr) {
+      let max = 0; (arr || []).forEach(x => { if (x.id > max) max = x.id; }); return max + 1;
+    }
+
+    // ============ 渲染：概览 ============
+    function renderOverview() {
+      const today = todayStr();
+      const todays = cache.sessions.filter(s => dateOf(s.start_time) === today);
+      const completedToday = todays.filter(s => s.status === 'completed');
+      const price = parseFloat(cache.settings.price_per_hour || 30);
+      const revenue = completedToday.reduce((sum, s) => {
+        const mins = s.actual_minutes != null ? s.actual_minutes : s.planned_minutes;
+        return sum + mins / 60 * price;
+      }, 0);
+      const overtime = cache.sessions.filter(s => s.status === 'active' && remainingMs(s) <= 0).length;
+      const stats = [
+        { num: cache.stations.length, lab: '总台位' },
+        { num: cache.sessions.filter(s => s.status === 'active').length, lab: '使用中' },
+        { num: completedToday.length, lab: '今日登记' },
+        { num: '¥' + revenue.toFixed(1), lab: '今日收入' },
+        { num: overtime, lab: '超时中' }
+      ];
+      document.getElementById('overviewStats').innerHTML = stats.map(s =>
+        '<div class="stat"><div class="num">' + s.num + '</div><div class="lab">' + s.lab + '</div></div>'
+      ).join('');
+
+      // 近 7 天趋势
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        days.push(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'));
+      }
+      const counts = days.map(day => cache.sessions.filter(s => dateOf(s.start_time) === day).length);
+      const max = Math.max(1, ...counts);
+      document.getElementById('trendChart').innerHTML = days.map((day, i) =>
+        '<div class="bar-col"><div class="bar" style="height:' + (counts[i]/max*100) + '%"></div>' +
+        '<div class="bar-lab">' + day.slice(5) + '</div></div>'
+      ).join('');
+    }
+    function remainingMs(s) {
+      const elapsed = Date.now() - new Date(s.start_time).getTime();
+      return s.planned_minutes * 60000 - elapsed;
+    }
+
+    // ============ 渲染：台位 ============
+    function renderStations() {
+      const tb = document.getElementById('stationsTable');
+      if (!cache.stations.length) { tb.innerHTML = '<tr><td colspan="4" class="empty">暂无台位</td></tr>'; return; }
+      tb.innerHTML = cache.stations.map(s => {
+        const tagClass = s.status === 'in_use' ? 'tag-inuse' : 'tag-idle';
+        const tagText = s.status === 'in_use' ? '使用中' : '空闲';
+        return '<tr><td>' + s.name + '</td><td><code>' + s.code + '</code></td>' +
+               '<td><span class="tag ' + tagClass + '">' + tagText + '</span></td>' +
+               '<td><button class="btn btn-danger" onclick="deleteStation(' + s.id + ')">删除</button></td></tr>';
+      }).join('');
+    }
+    async function addStation() {
+      const name = document.getElementById('newStationName').value.trim();
+      const code = document.getElementById('newStationCode').value.trim();
+      if (!name || !code) { toast('请填写名称和编码'); return; }
+      if (cache.stations.some(s => s.code === code)) { toast('编码已存在'); return; }
+      cache.stations.push({ id: nextId(cache.stations), name, code, status: 'idle', created_at: new Date().toISOString() });
+      try {
+        await API.put('stations', cache.stations);
+        document.getElementById('newStationName').value = '';
+        document.getElementById('newStationCode').value = '';
+        toast('已添加');
+        renderStations();
+      } catch (e) { toast('添加失败：' + e.message); await reload(); }
+    }
+    async function deleteStation(id) {
+      if (!confirm('确认删除该台位？')) return;
+      cache.stations = cache.stations.filter(s => s.id !== id);
+      try {
+        await API.put('stations', cache.stations);
+        toast('已删除'); renderStations();
+      } catch (e) { toast('删除失败：' + e.message); await reload(); }
+    }
+
+    // ============ 渲染：使用中 ============
+    function renderActive() {
+      const tb = document.getElementById('activeTable');
+      const active = cache.sessions.filter(s => s.status === 'active');
+      if (!active.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">暂无进行中的使用</td></tr>'; return; }
+      tb.innerHTML = active.map(s => {
+        const rem = remainingMs(s);
+        const remTxt = rem > 0 ? fmtDur(rem/60000) + ' 后到时' : '已超时 ' + fmtDur(-rem/60000);
+        const cls = rem <= 0 ? 'tag-over' : 'tag-inuse';
+        return '<tr><td>' + stationName(s.station_id) + '</td><td>' + (s.nickname || '微信用户') + '</td>' +
+               '<td>' + fmtDur((Date.now()-new Date(s.start_time).getTime())/60000) + '</td>' +
+               '<td><span class="tag ' + cls + '">' + remTxt + '</span></td>' +
+               '<td><button class="btn btn-danger" onclick="forceEnd(' + s.id + ')">结束</button></td></tr>';
+      }).join('');
+    }
+    async function forceEnd(id) {
+      if (!confirm('确认强制结束该使用？')) return;
+      const idx = cache.sessions.findIndex(s => s.id === id);
+      if (idx < 0) return;
+      const s = cache.sessions[idx];
+      const actual = Math.round((Date.now() - new Date(s.start_time).getTime()) / 60000 * 10) / 10;
+      cache.sessions[idx] = Object.assign({}, s, { end_time: new Date().toISOString(), actual_minutes: actual, status: 'completed' });
+      const st = cache.stations.find(x => x.id === s.station_id);
+      if (st) st.status = 'idle';
+      try {
+        await API.put('sessions', cache.sessions);
+        await API.put('stations', cache.stations);
+        toast('已结束'); renderActive(); renderOverview();
+      } catch (e) { toast('操作失败：' + e.message); await reload(); }
+    }
+
+    // ============ 渲染：历史 ============
+    function renderHistory() {
+      const all = cache.sessions.filter(s => s.status === 'completed')
+                   .sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+      const pages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+      if (historyPage > pages) historyPage = pages;
+      const start = (historyPage - 1) * PAGE_SIZE;
+      const slice = all.slice(start, start + PAGE_SIZE);
+      const tb = document.getElementById('historyTable');
+      if (!slice.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">暂无记录</td></tr>'; }
+      else {
+        tb.innerHTML = slice.map(s =>
+          '<tr><td>' + stationName(s.station_id) + '</td><td>' + (s.nickname || '微信用户') + '</td>' +
+          '<td>' + fmtTime(s.start_time) + '</td><td>' + fmtDur(s.actual_minutes != null ? s.actual_minutes : s.planned_minutes) +
+          '</td><td>' + feeOf(s) + '</td></tr>'
+        ).join('');
+      }
+      document.getElementById('pageInfo').textContent = historyPage + ' / ' + pages;
+    }
+    function changePage(delta) { historyPage += delta; renderHistory(); }
+
+    // ============ 渲染：二维码 ============
+    function renderQR() {
+      const grid = document.getElementById('qrGrid');
+      if (!cache.stations.length) { grid.innerHTML = '<div class="empty">暂无台位</div>'; return; }
+      grid.innerHTML = cache.stations.map(s => {
+        const qr = qrcode(0, 'M');
+        qr.addData(s.code);
+        qr.make();
+        return '<div class="qr-item">' + qr.createImgTag(4, 8) +
+               '<div class="name">' + s.name + '</div><div class="code">' + s.code + '</div></div>';
+      }).join('');
+    }
+
+    // ============ 渲染：设置 ============
+    function renderSettings() {
+      document.getElementById('setPrice').value = cache.settings.price_per_hour || 30;
+      document.getElementById('setDefault').value = cache.settings.default_minutes || 60;
+      document.getElementById('setRemind').value = cache.settings.reminder_minutes || 10;
+    }
+    async function saveSettings() {
+      cache.settings = {
+        price_per_hour: document.getElementById('setPrice').value || 30,
+        default_minutes: document.getElementById('setDefault').value || 60,
+        reminder_minutes: document.getElementById('setRemind').value || 10
+      };
+      try {
+        await API.put('settings', cache.settings);
+        toast('已保存'); renderOverview();
+      } catch (e) { toast('保存失败：' + e.message); await reload(); }
+    }
+
+    // ============ Tab 切换 ============
+    function switchTab(name) {
+      document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+      ['overview','stations','active','history','qr','settings'].forEach(t =>
+        document.getElementById('tab-' + t).classList.toggle('hidden', t !== name));
+      if (name === 'overview') renderOverview();
+      if (name === 'stations') renderStations();
+      if (name === 'active') { renderActive(); startActiveTimer(); }
+      if (name === 'history') renderHistory();
+      if (name === 'qr') renderQR();
+      if (name === 'settings') renderSettings();
+    }
+    function startActiveTimer() {
+      if (activeTimer) clearInterval(activeTimer);
+      activeTimer = setInterval(() => { if (!document.getElementById('tab-active').classList.contains('hidden')) renderActive(); }, 5000);
+    }
+
+    // ============ 启动 ============
+    async function reload() {
+      try {
+        await loadAll();
+        renderOverview(); renderStations(); renderActive(); renderHistory(); renderQR(); renderSettings();
+        toast('数据已加载');
+      } catch (e) {
+        toast('加载失败：' + e.message + '（请检查服务器代理）');
+      }
+    }
+    reload();
+  </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+    "default_minutes": "60",
+    "price_per_hour": "30",
+    "reminder_minutes": "10"
+}
