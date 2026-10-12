@@ -24,12 +24,14 @@ function load_config() {
 }
 
 $CFG = load_config();
-if (!is_array($CFG) || empty($CFG['owner']) || empty($CFG['repo']) || empty($CFG['pat_a'])) {
+if (!is_array($CFG) || empty($CFG['owner']) || empty($CFG['repo'])) {
     http_response_code(500);
-    echo json_encode(['error' => '服务器未正确配置 config.php（owner/repo/pat_a 缺失）']);
+    echo json_encode(['error' => '服务器未正确配置 config.php（owner/repo 缺失）']);
     exit;
 }
 $CFG['branch'] = $CFG['branch'] ?? 'main';
+// 开发便利：pat_a 留空时走匿名只读（适用于公开仓库本地调试）；写入仍需填入 PAT-A。
+$READ_ONLY = empty($CFG['pat_a']);
 
 // ---- 可选 Admin Key 闸门（仅在配置了 admin_key 时启用）----
 function require_admin_key() {
@@ -72,11 +74,13 @@ function gh_call($path, $method = 'GET', $body = null) {
          . '/contents/' . ltrim($path, '/') . '?ref=' . $CFG['branch'];
     $ch = curl_init($url);
     $headers = [
-        'Authorization: Bearer ' . $CFG['pat_a'],
         'Accept: application/vnd.github+json',
         'User-Agent: bean-php-proxy',
         'X-GitHub-Api-Version: 2022-11-28',
     ];
+    if (!empty($CFG['pat_a'])) {
+        $headers[] = 'Authorization: Bearer ' . $CFG['pat_a'];
+    }
     $opts = [CURLOPT_RETURNTRANSFER => true, CURLOPT_HTTPHEADER => $headers, CURLOPT_TIMEOUT => 20];
     if ($method === 'PUT') {
         $opts[CURLOPT_CUSTOMREQUEST] = 'PUT';
