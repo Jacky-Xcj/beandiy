@@ -10,36 +10,63 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
            background: #f5f6fa; color: #2c3e50; font-size: 14px; }
     .topbar { background: linear-gradient(135deg, #ff6b9d 0%, #ff8e72 100%); color: #fff;
-              padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+              padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+              gap: 12px; flex-wrap: wrap; }
     .topbar h1 { font-size: 18px; font-weight: 600; }
     .topbar .sub { font-size: 12px; opacity: .85; margin-top: 2px; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .badge { padding: 4px 11px; border-radius: 999px; font-size: 12px; background: rgba(255,255,255,.22);
+             color: #fff; cursor: help; white-space: nowrap; }
+    .badge-ok { background: rgba(255,255,255,.3); }
+    .badge-ro { background: rgba(0,0,0,.24); }
+    .badge-local { background: #ffe08a; color: #7a5200; }
+    .notice { background: #fff8e1; border-bottom: 1px solid #ffe082; color: #8d6e00;
+              padding: 10px 20px; font-size: 12.5px; line-height: 1.6; }
+    .sync { font-size: 12px; opacity: .85; white-space: nowrap; }
+    .loading-bar { height: 3px; background: linear-gradient(90deg, transparent, #ff6b9d, transparent) no-repeat;
+                   background-size: 40% 100%; animation: slide 1s linear infinite; }
+    @keyframes slide { from { background-position: -40% 0; } to { background-position: 140% 0; } }
     .tabs { display: flex; background: #fff; border-bottom: 1px solid #eee; overflow-x: auto; }
     .tabs button { flex: 0 0 auto; padding: 14px 16px; border: none; background: none; font-size: 14px;
                    color: #888; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
     .tabs button.active { color: #ff6b9d; border-bottom-color: #ff6b9d; font-weight: 600; }
-    .container { max-width: 900px; margin: 20px auto; padding: 0 14px; }
+    .container { max-width: 1000px; margin: 20px auto; padding: 0 14px; }
     .card { background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,.04); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 12px; }
     .stat { background: #fafafa; border-radius: 10px; padding: 16px; text-align: center; }
-    .stat .num { font-size: 26px; font-weight: 700; color: #ff6b9d; }
+    .stat .num { font-size: 24px; font-weight: 700; color: #ff6b9d; }
     .stat .lab { font-size: 12px; color: #999; margin-top: 4px; }
     .section-title { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+    .section-title .hint { font-size: 12px; font-weight: 400; color: #aaa; margin-left: 8px; }
+    .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #f0f0f0; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
     th { color: #999; font-weight: 500; }
+    td.ops { white-space: nowrap; }
+    td.ops .btn { margin-right: 6px; }
     .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
     .tag-idle { background: #e8f5e9; color: #2e7d32; }
     .tag-inuse { background: #fff3e0; color: #e65100; }
     .tag-over { background: #ffebee; color: #c62828; }
+    .tag-ext { background: #e3f2fd; color: #1565c0; cursor: help; }
+    .muted { color: #ccc; }
+    .muted-small { font-size: 11px; color: #bbb; margin-top: 3px; }
     .btn { border: none; border-radius: 8px; padding: 9px 16px; font-size: 13px; cursor: pointer; }
     .btn-primary { background: #ff6b9d; color: #fff; }
+    .btn-primary:hover { background: #f75b90; }
     .btn-ghost { background: #f0f0f0; color: #555; }
+    .btn-ghost:hover { background: #e6e6e6; }
     .btn-danger { background: #ffebee; color: #c62828; }
+    .btn-danger:hover { background: #ffdfe3; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
     .btn:disabled { opacity: .5; cursor: not-allowed; }
-    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-    .row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;
+                    background: #fff; color: #2c3e50; }
+    input:focus, select:focus { outline: none; border-color: #ff6b9d; }
+    .row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: flex-end; }
     .row > div { flex: 1; min-width: 140px; }
+    .row > .row-btn { flex: 0 0 auto; }
     .label { font-size: 12px; color: #999; margin-bottom: 4px; display: block; }
     .qr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 16px; }
     .qr-item { text-align: center; border: 1px solid #eee; border-radius: 10px; padding: 14px; }
@@ -48,19 +75,45 @@
     .qr-item .code { font-size: 11px; color: #999; word-break: break-all; }
     .empty { text-align: center; color: #bbb; padding: 40px 0; }
     .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-             background: rgba(0,0,0,.8); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 200; }
+             background: rgba(0,0,0,.8); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px;
+             z-index: 200; max-width: 80%; text-align: center; }
     .modal-mask { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex;
-                  align-items: center; justify-content: center; z-index: 100; }
-    .modal { background: #fff; border-radius: 14px; padding: 22px; width: 360px; max-width: 92%; }
-    .modal h3 { margin-bottom: 14px; }
+                  align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    .modal { background: #fff; border-radius: 14px; padding: 22px; width: 420px; max-width: 100%;
+             max-height: 90vh; overflow-y: auto; }
+    .modal h3 { margin-bottom: 14px; font-size: 16px; }
+    .modal-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
     .warn { background: #fff8e1; border: 1px solid #ffe082; color: #8d6e00;
-            border-radius: 8px; padding: 10px 12px; font-size: 12px; margin-bottom: 14px; line-height: 1.5; }
+            border-radius: 8px; padding: 10px 12px; font-size: 12px; margin-bottom: 14px; line-height: 1.6; }
+    .preview { background: #f0f7ff; border: 1px solid #d6e6fb; color: #1565c0; border-radius: 8px;
+               padding: 10px 12px; font-size: 13px; line-height: 1.5; }
+    .preview-bad { background: #fff5f5; border-color: #ffd6d6; color: #c62828; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .chip { border: 1px solid #e2e2e2; background: #fafafa; color: #666; border-radius: 999px;
+            padding: 6px 14px; font-size: 13px; cursor: pointer; }
+    .chip:hover { border-color: #ffb3cd; color: #ff6b9d; }
+    .chip.active { background: #ff6b9d; border-color: #ff6b9d; color: #fff; }
     .pager { display: flex; justify-content: center; gap: 12px; align-items: center; margin-top: 14px; }
     .hidden { display: none !important; }
     .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 130px; }
     .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
     .bar { width: 60%; background: #ff6b9d; border-radius: 4px 4px 0 0; min-height: 2px; transition: height .3s; }
     .bar-lab { font-size: 10px; color: #999; margin-top: 4px; }
+    .bar-val { font-size: 10px; color: #ff6b9d; margin-bottom: 2px; }
+    .station-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 10px; }
+    .st-chip { border-radius: 10px; padding: 12px; border: 1px solid #eee; }
+    .st-chip.st-idle { background: #f6fbf6; border-color: #dff0e0; }
+    .st-chip.st-busy { background: #fff8ef; border-color: #ffe1bd; }
+    .st-name { font-weight: 600; font-size: 13px; }
+    .st-sub { font-size: 11px; color: #999; margin-top: 4px; }
+    .legend { font-size: 12px; color: #aaa; margin-top: 10px; line-height: 1.6; }
+    @media print {
+      .topbar, .tabs, .loading-bar, .no-print { display: none !important; }
+      body { background: #fff; }
+      .container { margin: 0; max-width: none; }
+      .card { box-shadow: none; border: none; padding: 0; }
+      .qr-grid { grid-template-columns: repeat(3, 1fr); }
+    }
   </style>
 </head>
 <body>
@@ -69,7 +122,14 @@
       <h1>🎨 拼豆工坊 · 管理后台</h1>
       <div class="sub" id="repoSub">经服务器代理 · 数据存于 GitHub 仓库</div>
     </div>
+    <div class="topbar-right">
+      <span class="badge" id="modeBadge" title="正在检测写权限">检测中…</span>
+      <span class="sync" id="syncTime">—</span>
+      <button class="btn btn-ghost btn-sm no-print" onclick="reload()">↻ 刷新</button>
+    </div>
   </div>
+  <div class="loading-bar hidden" id="loadingBar"></div>
+  <div class="notice hidden" id="modeNotice"></div>
 
   <div class="tabs">
     <button data-tab="overview" class="active" onclick="switchTab('overview')">概览</button>
@@ -87,6 +147,10 @@
         <div class="grid" id="overviewStats"></div>
       </div>
       <div class="card">
+        <div class="section-title">台位状态<span class="hint">实时占用一览</span></div>
+        <div class="station-chips" id="stationChips"></div>
+      </div>
+      <div class="card">
         <div class="section-title">近 7 天使用趋势</div>
         <div class="bar-chart" id="trendChart"></div>
       </div>
@@ -98,29 +162,55 @@
         <div class="row">
           <div><span class="label">台位名称</span><input id="newStationName" placeholder="如 A1 拼豆台位" /></div>
           <div><span class="label">台位编码（扫码使用）</span><input id="newStationCode" placeholder="如 BEANDIY-STATION-06" /></div>
+          <div class="row-btn"><button class="btn btn-primary" onclick="addStation()">+ 添加台位</button></div>
         </div>
-        <button class="btn btn-primary" onclick="addStation()">+ 添加台位</button>
+        <div class="legend">编码即二维码内容，建议保持 <code>BEANDIY-STATION-XX</code> 格式并在添加后到「二维码」页打印张贴。</div>
       </div>
       <div class="card">
         <div class="section-title">全部台位</div>
-        <table><thead><tr><th>名称</th><th>编码</th><th>状态</th><th>操作</th></tr></thead>
-          <tbody id="stationsTable"></tbody></table>
+        <div class="table-wrap">
+          <table><thead><tr><th>名称</th><th>编码</th><th>状态</th><th>今日使用</th><th>操作</th></tr></thead>
+            <tbody id="stationsTable"></tbody></table>
+        </div>
       </div>
     </div>
 
     <div id="tab-active" class="hidden">
       <div class="card">
-        <div class="section-title">当前使用中（每 5 秒刷新）</div>
-        <table><thead><tr><th>台位</th><th>用户</th><th>已用</th><th>剩余</th><th>操作</th></tr></thead>
-          <tbody id="activeTable"></tbody></table>
+        <div class="section-title">当前使用中<span class="hint">每 5 秒刷新 · 续时只能在这里操作</span></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>台位</th><th>用户</th><th>计划</th><th>已用</th><th>剩余</th><th>续时</th><th>操作</th></tr></thead>
+            <tbody id="activeTable"></tbody></table>
+        </div>
+        <div class="legend">「延长」= 为顾客续时，会立即把计划时长加上去，顾客切回小程序计时页即可看到新的剩余时间。</div>
       </div>
     </div>
 
     <div id="tab-history" class="hidden">
       <div class="card">
-        <div class="section-title">使用记录</div>
-        <table><thead><tr><th>台位</th><th>用户</th><th>开始</th><th>时长</th><th>费用</th></tr></thead>
-          <tbody id="historyTable"></tbody></table>
+        <div class="section-title">筛选</div>
+        <div class="row">
+          <div><span class="label">开始日期（含）</span><input id="histFrom" type="date" /></div>
+          <div><span class="label">结束日期（含）</span><input id="histTo" type="date" /></div>
+          <div><span class="label">台位</span><select id="histStation"><option value="">全部台位</option></select></div>
+          <div><span class="label">用户昵称包含</span><input id="histKw" placeholder="可留空" /></div>
+          <div class="row-btn">
+            <button class="btn btn-primary" onclick="historyPage = 1; renderHistory()">筛选</button>
+          </div>
+          <div class="row-btn">
+            <button class="btn btn-ghost" onclick="resetHistFilter()">重置</button>
+          </div>
+          <div class="row-btn">
+            <button class="btn btn-ghost" onclick="exportCsv()">⬇ 导出 CSV</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">使用记录<span class="hint" id="histSummary"></span></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>台位</th><th>用户</th><th>开始</th><th>时长</th><th>费用</th><th>续时</th></tr></thead>
+            <tbody id="historyTable"></tbody></table>
+        </div>
         <div class="pager">
           <button class="btn btn-ghost" onclick="changePage(-1)">上一页</button>
           <span id="pageInfo">1 / 1</span>
@@ -133,7 +223,7 @@
       <div class="card">
         <div class="section-title">台位二维码（打印后张贴，顾客在小程序内扫码登记）</div>
         <div style="margin-bottom:12px;">
-          <button class="btn btn-ghost" onclick="window.print()">🖨 打印全部</button>
+          <button class="btn btn-ghost no-print" onclick="window.print()">🖨 打印全部</button>
         </div>
         <div class="qr-grid" id="qrGrid"></div>
         <p style="font-size:12px;color:#999;margin-top:12px;line-height:1.6;">
@@ -146,118 +236,256 @@
       <div class="card">
         <div class="section-title">营业设置</div>
         <div class="row">
-          <div><span class="label">每小时价格（元）</span><input id="setPrice" type="number" /></div>
-          <div><span class="label">默认使用时长（分钟）</span><input id="setDefault" type="number" /></div>
+          <div><span class="label">每小时价格（元）</span><input id="setPrice" type="number" min="0" step="1" /></div>
+          <div><span class="label">默认使用时长（分钟）</span><input id="setDefault" type="number" min="1" step="5" /></div>
+          <div><span class="label">到时前提醒（分钟，填 0 = 不提醒）</span><input id="setRemind" type="number" min="0" step="1" /></div>
+          <div class="row-btn"><button class="btn btn-primary" onclick="saveSettings()">保存设置</button></div>
         </div>
-        <div class="row">
-          <div><span class="label">到时前提醒（分钟，0=不提醒）</span><input id="setRemind" type="number" /></div>
+        <div class="legend">
+          默认使用时长作用于顾客扫码登记时的初始时长；到时前提醒作用于小程序计时页的提醒弹窗与橙色预警（填 0 则完全静默）。
         </div>
-        <button class="btn btn-primary" onclick="saveSettings()">保存设置</button>
       </div>
     </div>
   </div>
 
   <!-- 配置弹窗已移除：令牌仅存于服务器，不再进入浏览器 -->
+  <div id="modalRoot" class="hidden"></div>
 
   <script>
-    // ============ 经服务器 PHP 代理访问 GitHub 数据（同源 /api/*.php）============
+    // ============ 经服务器代理访问 GitHub 数据（同源 /api/*.php）============
     const PAGE_SIZE = 20;
+    const TABS = ['overview','stations','active','history','qr','settings'];
+    let currentTab = 'overview';
     let historyPage = 1;
     let activeTimer = null;
     let cache = { stations: [], sessions: [], settings: {} };
-    let adminKey = null; // 仅内存缓存，写操作遇 403 时由用户临时输入
+    let adminKey = null;       // 仅内存缓存，写操作遇 403 时由用户临时输入
+    let busy = false;          // 写操作进行中，避免重复提交
+    let extendingId = null;    // 当前正在续时的会话 id
 
-    const API = {
-      get: (f) => fetch('/api/' + f + '.php').then(r => r.json()).then(d => d.data),
-      put: async (f, obj) => {
-        const doFetch = (key) => {
-          const h = { 'Content-Type': 'application/json' };
-          if (key) h['X-Admin-Key'] = key;
-          return fetch('/api/' + f + '.php', { method: 'PUT', headers: h, body: JSON.stringify(obj) });
-        };
-        let res = await doFetch(adminKey);
-        if (res.status === 403 && !adminKey) {
-          adminKey = prompt('请输入管理密钥（Admin Key）：');
-          if (adminKey) res = await doFetch(adminKey);
-        }
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      }
-    };
-
-    // GitHub 直连逻辑已移至服务器端 api/*.php（PAT 不再进浏览器）
-
-    async function loadAll() {
-      const [st, se, set] = await Promise.all([
-        API.get('stations'),
-        API.get('sessions'),
-        API.get('settings').catch(() => ({}))
-      ]);
-      cache.stations = st || [];
-      cache.sessions = se || [];
-      cache.settings = (set && typeof set === 'object') ? set : { price_per_hour: 30, default_minutes: 60, reminder_minutes: 10 };
+    // ---------- 后端接口 ----------
+    async function apiGet(f) {
+      const res = await fetch('/api/' + f + '.php', { cache: 'no-store' });
+      let json = null;
+      try { json = await res.json(); } catch (e) { /* 非 JSON */ }
+      if (!res.ok) throw new Error((json && json.error) || ('HTTP ' + res.status));
+      return json || {};
     }
 
-    // ============ 工具函数 ============
+    async function apiPut(f, obj) {
+      const doFetch = (key) => {
+        const h = { 'Content-Type': 'application/json' };
+        if (key) h['X-Admin-Key'] = key;
+        return fetch('/api/' + f + '.php', { method: 'PUT', headers: h, body: JSON.stringify(obj) });
+      };
+      let res = await doFetch(adminKey);
+      if (res.status === 403 && !adminKey) {
+        adminKey = prompt('请输入管理密钥（Admin Key）：');
+        if (adminKey) res = await doFetch(adminKey);
+      }
+      let json = null;
+      try { json = await res.json(); } catch (e) { /* 非 JSON */ }
+      if (!res.ok) {
+        if (res.status === 401) updateModeBadge(false);
+        throw new Error((json && json.error) || ('HTTP ' + res.status));
+      }
+      return json || {};
+    }
+
+    // ---------- 工具函数 ----------
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+      });
+    }
     function todayStr() {
       const d = new Date();
       return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     }
     function dateOf(iso) {
       const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
       return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     }
     function fmtTime(iso) {
       if (!iso) return '--';
       const d = new Date(iso);
+      if (isNaN(d.getTime())) return '--';
       return String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0') + ' ' +
              String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
     }
+    function hhmm(date) {
+      return String(date.getHours()).padStart(2,'0') + ':' + String(date.getMinutes()).padStart(2,'0');
+    }
     function fmtDur(min) {
       min = Math.round(min || 0);
+      const neg = min < 0; min = Math.abs(min);
       const h = Math.floor(min/60), m = min%60;
-      return h > 0 ? (h + '时' + (m ? m + '分' : '')) : (m + '分');
+      const txt = h > 0 ? (h + '时' + (m ? m + '分' : '')) : (m + '分');
+      return (neg ? '-' : '') + txt;
     }
-    function feeOf(s) {
+    function feeNum(s) {
       const mins = s.actual_minutes != null ? s.actual_minutes : s.planned_minutes;
-      const price = parseFloat(cache.settings.price_per_hour || 30);
-      return '¥' + (mins / 60 * price).toFixed(1);
+      const price = Number(cache.settings.price_per_hour);
+      return (mins / 60 * (isFinite(price) ? price : 30));
     }
+    function feeOf(s) { return '¥' + feeNum(s).toFixed(1); }
     function toast(msg) {
       const t = document.createElement('div');
       t.className = 'toast'; t.textContent = msg;
       document.body.appendChild(t);
-      setTimeout(() => t.remove(), 1800);
+      setTimeout(function () { t.remove(); }, msg.length > 18 ? 3200 : 1800);
     }
     function stationName(id) {
-      const s = cache.stations.find(x => x.id === id);
+      const s = cache.stations.find(function (x) { return x.id === id; });
       return s ? s.name : ('台位#' + id);
     }
     function nextId(arr) {
-      let max = 0; (arr || []).forEach(x => { if (x.id > max) max = x.id; }); return max + 1;
+      let max = 0; (arr || []).forEach(function (x) { if (x.id > max) max = x.id; });
+      return max + 1;
+    }
+    function extCount(s) { return (s.extensions || []).length; }
+    function extTitle(s) {
+      return (s.extensions || []).map(function (x) {
+        return '+' + x.minutes + '分 · ' + fmtTime(x.at) + (x.note ? ' · ' + x.note : '');
+      }).join('　|　') || '无续时记录';
+    }
+    function remainingMs(s) {
+      const elapsed = Date.now() - new Date(s.start_time).getTime();
+      return s.planned_minutes * 60000 - elapsed;
+    }
+
+    // 写操作前与服务器重新对齐：本页的数据是整文件覆盖写入的，
+    // 若后台同时被多台设备（或小程序）打开，直接用旧缓存写回会把别人的改动盖掉。
+    // 刷新失败时沿用现有缓存（写入仍有 GitHub sha 乐观锁兜底），不打断操作。
+    async function refreshCache() {
+      try {
+        const results = await Promise.all([apiGet('stations'), apiGet('sessions')]);
+        if (Array.isArray(results[0].data)) cache.stations = results[0].data;
+        if (Array.isArray(results[1].data)) cache.sessions = results[1].data;
+      } catch (e) { /* 沿用现有缓存 */ }
+    }
+
+    // ---------- 写操作串行化 ----------
+    async function withBusy(fn) {
+      if (busy) { toast('上一个操作还在进行中，请稍候…'); return; }
+      busy = true;
+      const bar = document.getElementById('loadingBar');
+      if (bar) bar.classList.remove('hidden');
+      try {
+        await refreshCache();
+        await fn();
+      } finally {
+        busy = false;
+        if (bar) bar.classList.add('hidden');
+      }
+    }
+
+    // ---------- 自定义弹窗 ----------
+    function showModal(opts) {
+      const root = document.getElementById('modalRoot');
+      root.innerHTML =
+        '<div class="modal-mask">' +
+          '<div class="modal">' +
+            '<h3>' + esc(opts.title) + '</h3>' +
+            '<div class="modal-body">' + (opts.body || '') + '</div>' +
+            '<div class="modal-foot">' +
+              '<button class="btn btn-ghost" onclick="closeModal()">' + esc(opts.cancelText || '取消') + '</button>' +
+              '<button class="btn ' + (opts.danger ? 'btn-danger' : 'btn-primary') + '" id="modalOk">' +
+                esc(opts.okText || '确定') + '</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      root.classList.remove('hidden');
+      document.getElementById('modalOk').onclick = opts.onOk;
+      const firstInput = root.querySelector('input');
+      if (firstInput) firstInput.focus();
+    }
+    function closeModal() {
+      const root = document.getElementById('modalRoot');
+      root.classList.add('hidden');
+      root.innerHTML = '';
+      extendingId = null;
+    }
+    function updateModeBadge(writable, mode) {
+      const el = document.getElementById('modeBadge');
+      const notice = document.getElementById('modeNotice');
+      if (writable === true && mode === 'local') {
+        el.className = 'badge badge-local';
+        el.textContent = '⚠ 本地预览';
+        el.title = '改动只保存在本机，不会写入 GitHub 仓库';
+        notice.className = 'notice';
+        notice.innerHTML = '当前是 <b>本地预览模式</b>：所有增删改与续时只保存在本机覆盖层' +
+          '（<code>.workbuddy/local-data/</code>），<b>不会写入 GitHub 仓库</b>。' +
+          '运行 <code>curl -X POST http://' + location.host + '/__local/reset</code> 可清空本地改动、回到仓库真实数据。';
+      } else if (writable === true) {
+        el.className = 'badge badge-ok';
+        el.textContent = '✓ 可写';
+        el.title = '后端已配置令牌，本页的增删改会真正写入数据仓库';
+        notice.className = 'notice hidden';
+      } else if (writable === false) {
+        el.className = 'badge badge-ro';
+        el.textContent = '🔒 只读';
+        el.title = '后端未配置令牌（pat_a），当前只能查看。请在服务器 repo/api/config.php 填入 PAT-A 后重启服务。';
+        notice.className = 'notice';
+        notice.innerHTML = '当前是 <b>只读模式</b>：后端未配置令牌（<code>pat_a</code>），只能查看数据。' +
+          '请在服务器 <code>repo/api/config.php</code> 填入 PAT-A 后重启服务，即可增删改与续时。';
+      } else {
+        el.className = 'badge';
+        el.textContent = '? 状态未知';
+        el.title = '后端未上报可写状态（可能是旧版本接口）';
+        notice.className = 'notice hidden';
+      }
+    }
+
+    // ============ 数据加载 ============
+    async function loadData() {
+      const results = await Promise.all([
+        apiGet('stations'),
+        apiGet('sessions'),
+        apiGet('settings').catch(function () { return null; })
+      ]);
+      const st = results[0], se = results[1], set = results[2];
+      cache.stations = Array.isArray(st.data) ? st.data : [];
+      cache.sessions = Array.isArray(se.data) ? se.data : [];
+      if (set && set.data && typeof set.data === 'object' && !Array.isArray(set.data)) {
+        cache.settings = set.data;
+      }
+      updateModeBadge(st.writable, st.mode);
+      document.getElementById('syncTime').textContent =
+        '同步于 ' + new Date().toLocaleTimeString('zh-CN', { hour12: false });
     }
 
     // ============ 渲染：概览 ============
     function renderOverview() {
       const today = todayStr();
-      const todays = cache.sessions.filter(s => dateOf(s.start_time) === today);
-      const completedToday = todays.filter(s => s.status === 'completed');
-      const price = parseFloat(cache.settings.price_per_hour || 30);
-      const revenue = completedToday.reduce((sum, s) => {
+      const todays = cache.sessions.filter(function (s) { return dateOf(s.start_time) === today; });
+      const completedToday = todays.filter(function (s) { return s.status === 'completed'; });
+      const price = Number(cache.settings.price_per_hour);
+      const unit = isFinite(price) ? price : 30;
+      const revenue = completedToday.reduce(function (sum, s) {
         const mins = s.actual_minutes != null ? s.actual_minutes : s.planned_minutes;
-        return sum + mins / 60 * price;
+        return sum + mins / 60 * unit;
       }, 0);
-      const overtime = cache.sessions.filter(s => s.status === 'active' && remainingMs(s) <= 0).length;
+      const totalMin = todays.reduce(function (sum, s) {
+        return sum + (s.actual_minutes != null ? s.actual_minutes : s.planned_minutes);
+      }, 0);
+      const overtime = cache.sessions.filter(function (s) {
+        return s.status === 'active' && remainingMs(s) <= 0;
+      }).length;
       const stats = [
         { num: cache.stations.length, lab: '总台位' },
-        { num: cache.sessions.filter(s => s.status === 'active').length, lab: '使用中' },
+        { num: cache.sessions.filter(function (s) { return s.status === 'active'; }).length, lab: '使用中' },
         { num: completedToday.length, lab: '今日登记' },
         { num: '¥' + revenue.toFixed(1), lab: '今日收入' },
+        { num: fmtDur(totalMin), lab: '今日时长' },
         { num: overtime, lab: '超时中' }
       ];
-      document.getElementById('overviewStats').innerHTML = stats.map(s =>
-        '<div class="stat"><div class="num">' + s.num + '</div><div class="lab">' + s.lab + '</div></div>'
-      ).join('');
+      document.getElementById('overviewStats').innerHTML = stats.map(function (s) {
+        return '<div class="stat"><div class="num">' + esc(s.num) + '</div><div class="lab">' + esc(s.lab) + '</div></div>';
+      }).join('');
+
+      renderStationChips();
 
       // 近 7 天趋势
       const days = [];
@@ -265,164 +493,478 @@
         const d = new Date(); d.setDate(d.getDate() - i);
         days.push(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'));
       }
-      const counts = days.map(day => cache.sessions.filter(s => dateOf(s.start_time) === day).length);
-      const max = Math.max(1, ...counts);
-      document.getElementById('trendChart').innerHTML = days.map((day, i) =>
-        '<div class="bar-col"><div class="bar" style="height:' + (counts[i]/max*100) + '%"></div>' +
-        '<div class="bar-lab">' + day.slice(5) + '</div></div>'
-      ).join('');
+      const counts = days.map(function (day) {
+        return cache.sessions.filter(function (s) { return dateOf(s.start_time) === day; }).length;
+      });
+      const max = Math.max(1, Math.max.apply(null, counts));
+      document.getElementById('trendChart').innerHTML = days.map(function (day, i) {
+        return '<div class="bar-col">' +
+          '<div class="bar-val">' + esc(counts[i]) + '</div>' +
+          '<div class="bar" style="height:' + (counts[i]/max*100) + '%"></div>' +
+          '<div class="bar-lab">' + esc(day.slice(5)) + '</div></div>';
+      }).join('');
     }
-    function remainingMs(s) {
-      const elapsed = Date.now() - new Date(s.start_time).getTime();
-      return s.planned_minutes * 60000 - elapsed;
+
+    function renderStationChips() {
+      const el = document.getElementById('stationChips');
+      if (!cache.stations.length) { el.innerHTML = '<div class="empty">暂无台位</div>'; return; }
+      el.innerHTML = cache.stations.map(function (st) {
+        const act = cache.sessions.find(function (x) {
+          return x.station_id === st.id && x.status === 'active';
+        });
+        let sub = '空闲';
+        let cls = 'st-idle';
+        if (act) {
+          const rem = remainingMs(act);
+          cls = 'st-busy';
+          sub = rem > 0 ? ('剩余 ' + fmtDur(rem/60000)) : ('⚠ 超时 ' + fmtDur(-rem/60000));
+        }
+        return '<div class="st-chip ' + cls + '">' +
+          '<div class="st-name">' + esc(st.name) + '</div>' +
+          '<div class="st-sub">' + esc(sub) + '</div></div>';
+      }).join('');
     }
 
     // ============ 渲染：台位 ============
+    function stationTodayCount(id) {
+      const today = todayStr();
+      return cache.sessions.filter(function (s) {
+        return s.station_id === id && dateOf(s.start_time) === today;
+      }).length;
+    }
     function renderStations() {
       const tb = document.getElementById('stationsTable');
-      if (!cache.stations.length) { tb.innerHTML = '<tr><td colspan="4" class="empty">暂无台位</td></tr>'; return; }
-      tb.innerHTML = cache.stations.map(s => {
-        const tagClass = s.status === 'in_use' ? 'tag-inuse' : 'tag-idle';
-        const tagText = s.status === 'in_use' ? '使用中' : '空闲';
-        return '<tr><td>' + s.name + '</td><td><code>' + s.code + '</code></td>' +
-               '<td><span class="tag ' + tagClass + '">' + tagText + '</span></td>' +
-               '<td><button class="btn btn-danger" onclick="deleteStation(' + s.id + ')">删除</button></td></tr>';
+      if (!cache.stations.length) {
+        tb.innerHTML = '<tr><td colspan="5" class="empty">暂无台位</td></tr>';
+        return;
+      }
+      tb.innerHTML = cache.stations.map(function (s) {
+        const inUse = s.status === 'in_use';
+        return '<tr><td>' + esc(s.name) + '</td>' +
+          '<td><code>' + esc(s.code) + '</code></td>' +
+          '<td><span class="tag ' + (inUse ? 'tag-inuse' : 'tag-idle') + '">' + (inUse ? '使用中' : '空闲') + '</span></td>' +
+          '<td>' + esc(stationTodayCount(s.id)) + ' 次</td>' +
+          '<td class="ops">' +
+            '<button class="btn btn-ghost btn-sm" onclick="openEditStation(' + s.id + ')">编辑</button>' +
+            '<button class="btn btn-danger btn-sm" onclick="deleteStation(' + s.id + ')">删除</button>' +
+          '</td></tr>';
       }).join('');
+      renderHistStationOptions();
+    }
+    function openEditStation(id) {
+      const s = cache.stations.find(function (x) { return x.id === id; });
+      if (!s) return;
+      const inUse = s.status === 'in_use';
+      const body =
+        (inUse ? '<div class="warn">该台位正在使用中。修改「编码」会让已打印的二维码失效，请谨慎操作（改后需重新打印）。</div>' : '') +
+        '<div class="row"><div><span class="label">台位名称</span>' +
+          '<input id="editStationName" value="' + esc(s.name) + '" /></div></div>' +
+        '<div class="row"><div><span class="label">台位编码（二维码内容）</span>' +
+          '<input id="editStationCode" value="' + esc(s.code) + '" /></div></div>';
+      showModal({ title: '编辑台位', body: body, okText: '保存', onOk: function () { doEditStation(id); } });
+    }
+    async function doEditStation(id) {
+      const name = document.getElementById('editStationName').value.trim();
+      const code = document.getElementById('editStationCode').value.trim();
+      if (!name || !code) { toast('名称和编码都不能为空'); return; }
+      if (cache.stations.some(function (x) { return x.id !== id && x.code === code; })) {
+        toast('该编码已被其他台位占用');
+        return;
+      }
+      await withBusy(async function () {
+        const next = cache.stations.map(function (x) {
+          return x.id === id ? Object.assign({}, x, { name: name, code: code }) : x;
+        });
+        try {
+          await apiPut('stations', next);
+          cache.stations = next;
+          closeModal();
+          toast('已保存');
+          renderStations(); renderOverview(); renderQR();
+        } catch (e) { toast('保存失败：' + e.message); }
+      });
     }
     async function addStation() {
-      const name = document.getElementById('newStationName').value.trim();
-      const code = document.getElementById('newStationCode').value.trim();
+      const nameEl = document.getElementById('newStationName');
+      const codeEl = document.getElementById('newStationCode');
+      const name = nameEl.value.trim();
+      const code = codeEl.value.trim();
       if (!name || !code) { toast('请填写名称和编码'); return; }
-      if (cache.stations.some(s => s.code === code)) { toast('编码已存在'); return; }
-      cache.stations.push({ id: nextId(cache.stations), name, code, status: 'idle', created_at: new Date().toISOString() });
-      try {
-        await API.put('stations', cache.stations);
-        document.getElementById('newStationName').value = '';
-        document.getElementById('newStationCode').value = '';
-        toast('已添加');
-        renderStations();
-      } catch (e) { toast('添加失败：' + e.message); await reload(); }
+      if (cache.stations.some(function (s) { return s.code === code; })) { toast('编码已存在'); return; }
+      await withBusy(async function () {
+        const next = cache.stations.concat([{
+          id: nextId(cache.stations), name: name, code: code, status: 'idle',
+          created_at: new Date().toISOString()
+        }]);
+        try {
+          await apiPut('stations', next);
+          cache.stations = next;
+          nameEl.value = '';
+          codeEl.value = '';
+          toast('已添加');
+          renderStations(); renderOverview(); renderQR();
+        } catch (e) { toast('添加失败：' + e.message); }
+      });
     }
     async function deleteStation(id) {
-      if (!confirm('确认删除该台位？')) return;
-      cache.stations = cache.stations.filter(s => s.id !== id);
-      try {
-        await API.put('stations', cache.stations);
-        toast('已删除'); renderStations();
-      } catch (e) { toast('删除失败：' + e.message); await reload(); }
+      const s = cache.stations.find(function (x) { return x.id === id; });
+      if (!s) return;
+      if (s.status === 'in_use') { toast('该台位正在使用中，请先结束使用'); return; }
+      if (!confirm('确认删除台位「' + s.name + '」？此操作会写入数据仓库。')) return;
+      await withBusy(async function () {
+        const next = cache.stations.filter(function (x) { return x.id !== id; });
+        try {
+          await apiPut('stations', next);
+          cache.stations = next;
+          toast('已删除');
+          renderStations(); renderOverview(); renderQR();
+        } catch (e) { toast('删除失败：' + e.message); }
+      });
     }
 
     // ============ 渲染：使用中 ============
     function renderActive() {
       const tb = document.getElementById('activeTable');
-      const active = cache.sessions.filter(s => s.status === 'active');
-      if (!active.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">暂无进行中的使用</td></tr>'; return; }
-      tb.innerHTML = active.map(s => {
+      const active = cache.sessions.filter(function (s) { return s.status === 'active'; })
+        .sort(function (a, b) { return new Date(a.start_time) - new Date(b.start_time); });
+      if (!active.length) {
+        tb.innerHTML = '<tr><td colspan="7" class="empty">暂无进行中的使用</td></tr>';
+        return;
+      }
+      tb.innerHTML = active.map(function (s) {
         const rem = remainingMs(s);
-        const remTxt = rem > 0 ? fmtDur(rem/60000) + ' 后到时' : '已超时 ' + fmtDur(-rem/60000);
+        const started = new Date(s.start_time).getTime();
+        const endAt = hhmm(new Date(started + s.planned_minutes * 60000));
+        const remTxt = rem > 0 ? (fmtDur(rem/60000) + ' 后到时') : ('已超时 ' + fmtDur(-rem/60000));
         const cls = rem <= 0 ? 'tag-over' : 'tag-inuse';
-        return '<tr><td>' + stationName(s.station_id) + '</td><td>' + (s.nickname || '微信用户') + '</td>' +
-               '<td>' + fmtDur((Date.now()-new Date(s.start_time).getTime())/60000) + '</td>' +
-               '<td><span class="tag ' + cls + '">' + remTxt + '</span></td>' +
-               '<td><button class="btn btn-danger" onclick="forceEnd(' + s.id + ')">结束</button></td></tr>';
+        const n = extCount(s);
+        const extCell = n
+          ? '<span class="tag tag-ext" title="' + esc(extTitle(s)) + '">已续 ' + esc(n) + ' 次</span>'
+          : '<span class="muted">—</span>';
+        return '<tr>' +
+          '<td>' + esc(stationName(s.station_id)) + '</td>' +
+          '<td>' + esc(s.nickname || '微信用户') + '</td>' +
+          '<td>' + esc(fmtDur(s.planned_minutes)) + '</td>' +
+          '<td>' + esc(fmtDur((Date.now() - started) / 60000)) + '</td>' +
+          '<td><span class="tag ' + cls + '">' + esc(remTxt) + '</span>' +
+            '<div class="muted-small">预计 ' + esc(endAt) + ' 结束</div></td>' +
+          '<td>' + extCell + '</td>' +
+          '<td class="ops">' +
+            '<button class="btn btn-primary btn-sm" onclick="openExtend(' + s.id + ')">延长</button>' +
+            '<button class="btn btn-danger btn-sm" onclick="forceEnd(' + s.id + ')">结束</button>' +
+          '</td></tr>';
       }).join('');
     }
+
+    // ---------- 续时（延长）----------
+    function openExtend(sessionId) {
+      const s = cache.sessions.find(function (x) { return x.id === sessionId; });
+      if (!s) return;
+      if (s.status !== 'active') { toast('该记录已结束，无法续时'); return; }
+      extendingId = sessionId;
+      const quick = [15, 30, 60, 90];
+      const body =
+        '<div class="warn">续时是门店经营动作：用户端小程序已不提供自助延长，只能在这里操作。' +
+          '保存后顾客切回小程序计时页即可看到新的剩余时间。</div>' +
+        '<span class="label">快捷选择</span>' +
+        '<div class="chips" id="extChips">' +
+          quick.map(function (m) {
+            return '<button type="button" class="chip" data-min="' + m + '" onclick="pickExtMinutes(' + m + ')">+' + m + ' 分钟</button>';
+          }).join('') +
+        '</div>' +
+        '<div class="row"><div><span class="label">本次增加（分钟）</span>' +
+          '<input id="extMinutes" type="number" min="1" step="5" value="30" oninput="updateExtPreview()" /></div></div>' +
+        '<div class="row"><div><span class="label">备注（可选，便于对账）</span>' +
+          '<input id="extNote" placeholder="如：购买加时套餐 / 补 10 元" /></div></div>' +
+        '<div class="preview" id="extPreview"></div>';
+      showModal({
+        title: '延长时长 · ' + stationName(s.station_id),
+        body: body,
+        okText: '确认续时',
+        onOk: function () { doExtend(sessionId); }
+      });
+      updateExtPreview();
+    }
+    function pickExtMinutes(m) {
+      const input = document.getElementById('extMinutes');
+      if (!input) return;
+      input.value = m;
+      updateExtPreview();
+    }
+    function updateExtPreview() {
+      const input = document.getElementById('extMinutes');
+      const pv = document.getElementById('extPreview');
+      if (!input || !pv) return;
+      const s = cache.sessions.find(function (x) { return x.id === extendingId; });
+      const add = parseInt(input.value, 10);
+      const chips = document.querySelectorAll('#extChips .chip');
+      if (chips && chips.length) {
+        Array.prototype.forEach.call(chips, function (c) {
+          c.classList.toggle('active', parseInt(c.getAttribute('data-min'), 10) === add);
+        });
+      }
+      if (!add || add <= 0) {
+        pv.className = 'preview preview-bad';
+        pv.textContent = '请输入大于 0 的分钟数';
+        return;
+      }
+      pv.className = 'preview';
+      if (!s) { pv.textContent = '计划时长将增加 ' + add + ' 分钟'; return; }
+      pv.textContent = '计划时长：' + s.planned_minutes + ' → ' + (s.planned_minutes + add) +
+        ' 分钟（剩余时间立即增加 ' + add + ' 分钟）';
+    }
+    async function doExtend(sessionId) {
+      const input = document.getElementById('extMinutes');
+      const noteEl = document.getElementById('extNote');
+      const minutes = input ? parseInt(input.value, 10) : NaN;
+      if (!minutes || minutes <= 0) { toast('请输入有效的分钟数'); return; }
+      const note = noteEl ? noteEl.value.trim() : '';
+      await withBusy(async function () {
+        const idx = cache.sessions.findIndex(function (x) { return x.id === sessionId; });
+        if (idx < 0) { toast('找不到该记录'); return; }
+        const s = cache.sessions[idx];
+        if (s.status !== 'active') { toast('该记录已结束，无法续时'); return; }
+        const record = { minutes: minutes, at: new Date().toISOString(), by: 'admin' };
+        if (note) record.note = note;
+        const updatedSession = Object.assign({}, s, {
+          planned_minutes: (s.planned_minutes || 0) + minutes,
+          extensions: (s.extensions || []).concat([record])
+        });
+        const next = cache.sessions.slice();
+        next[idx] = updatedSession;
+        try {
+          await apiPut('sessions', next);
+          cache.sessions = next;
+          closeModal();
+          toast('已延长 ' + minutes + ' 分钟');
+          renderActive(); renderOverview();
+        } catch (e) {
+          toast('续时失败：' + e.message);
+        }
+      });
+    }
+
     async function forceEnd(id) {
-      if (!confirm('确认强制结束该使用？')) return;
-      const idx = cache.sessions.findIndex(s => s.id === id);
-      if (idx < 0) return;
-      const s = cache.sessions[idx];
-      const actual = Math.round((Date.now() - new Date(s.start_time).getTime()) / 60000 * 10) / 10;
-      cache.sessions[idx] = Object.assign({}, s, { end_time: new Date().toISOString(), actual_minutes: actual, status: 'completed' });
-      const st = cache.stations.find(x => x.id === s.station_id);
-      if (st) st.status = 'idle';
-      try {
-        await API.put('sessions', cache.sessions);
-        await API.put('stations', cache.stations);
-        toast('已结束'); renderActive(); renderOverview();
-      } catch (e) { toast('操作失败：' + e.message); await reload(); }
+      const s = cache.sessions.find(function (x) { return x.id === id; });
+      if (!s) return;
+      if (!confirm('确认结束「' + stationName(s.station_id) + '」当前的使用？')) return;
+      await withBusy(async function () {
+        const actual = Math.round((Date.now() - new Date(s.start_time).getTime()) / 60000 * 10) / 10;
+        const ended = Object.assign({}, s, {
+          end_time: new Date().toISOString(), actual_minutes: actual, status: 'completed'
+        });
+        const nextSessions = cache.sessions.map(function (x) { return x.id === id ? ended : x; });
+        const nextStations = cache.stations.map(function (x) {
+          return x.id === s.station_id ? Object.assign({}, x, { status: 'idle' }) : x;
+        });
+        try {
+          await apiPut('sessions', nextSessions);
+          await apiPut('stations', nextStations);
+          cache.sessions = nextSessions;
+          cache.stations = nextStations;
+          toast('已结束');
+          renderActive(); renderOverview(); renderStations();
+        } catch (e) { toast('操作失败：' + e.message); await reload({ silent: true }); }
+      });
     }
 
     // ============ 渲染：历史 ============
+    function readHistFilter() {
+      const g = function (id) { const el = document.getElementById(id); return el ? el.value : ''; };
+      return { from: g('histFrom'), to: g('histTo'), stationId: g('histStation'), kw: g('histKw').trim() };
+    }
+    function historyList() {
+      const f = readHistFilter();
+      let all = cache.sessions.filter(function (s) { return s.status === 'completed'; });
+      if (f.from) all = all.filter(function (s) { return dateOf(s.start_time) >= f.from; });
+      if (f.to) all = all.filter(function (s) { return dateOf(s.start_time) <= f.to; });
+      if (f.stationId) all = all.filter(function (s) { return String(s.station_id) === String(f.stationId); });
+      if (f.kw) {
+        const kw = f.kw.toLowerCase();
+        all = all.filter(function (s) { return String(s.nickname || '').toLowerCase().indexOf(kw) >= 0; });
+      }
+      return all.sort(function (a, b) { return new Date(b.start_time) - new Date(a.start_time); });
+    }
+    function renderHistStationOptions() {
+      const sel = document.getElementById('histStation');
+      if (!sel) return;
+      const keep = sel.value;
+      sel.innerHTML = '<option value="">全部台位</option>' + cache.stations.map(function (s) {
+        return '<option value="' + esc(s.id) + '">' + esc(s.name) + '</option>';
+      }).join('');
+      sel.value = keep;
+    }
     function renderHistory() {
-      const all = cache.sessions.filter(s => s.status === 'completed')
-                   .sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+      const all = historyList();
       const pages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
       if (historyPage > pages) historyPage = pages;
+      if (historyPage < 1) historyPage = 1;
       const start = (historyPage - 1) * PAGE_SIZE;
       const slice = all.slice(start, start + PAGE_SIZE);
       const tb = document.getElementById('historyTable');
-      if (!slice.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">暂无记录</td></tr>'; }
-      else {
-        tb.innerHTML = slice.map(s =>
-          '<tr><td>' + stationName(s.station_id) + '</td><td>' + (s.nickname || '微信用户') + '</td>' +
-          '<td>' + fmtTime(s.start_time) + '</td><td>' + fmtDur(s.actual_minutes != null ? s.actual_minutes : s.planned_minutes) +
-          '</td><td>' + feeOf(s) + '</td></tr>'
-        ).join('');
+      if (!slice.length) {
+        tb.innerHTML = '<tr><td colspan="6" class="empty">没有符合条件的记录</td></tr>';
+      } else {
+        tb.innerHTML = slice.map(function (s) {
+          const n = extCount(s);
+          return '<tr><td>' + esc(stationName(s.station_id)) + '</td>' +
+            '<td>' + esc(s.nickname || '微信用户') + '</td>' +
+            '<td>' + esc(fmtTime(s.start_time)) + '</td>' +
+            '<td>' + esc(fmtDur(s.actual_minutes != null ? s.actual_minutes : s.planned_minutes)) + '</td>' +
+            '<td>' + esc(feeOf(s)) + '</td>' +
+            '<td>' + (n ? '<span class="tag tag-ext" title="' + esc(extTitle(s)) + '">' + esc(n) + ' 次</span>'
+                        : '<span class="muted">—</span>') + '</td></tr>';
+        }).join('');
       }
       document.getElementById('pageInfo').textContent = historyPage + ' / ' + pages;
+      const sum = all.reduce(function (a, s) { return a + feeNum(s); }, 0);
+      document.getElementById('histSummary').textContent =
+        '共 ' + all.length + ' 条 · 合计 ¥' + sum.toFixed(1);
     }
-    function changePage(delta) { historyPage += delta; renderHistory(); }
+    function changePage(delta) {
+      historyPage += delta;
+      if (historyPage < 1) historyPage = 1;
+      renderHistory();
+    }
+    function resetHistFilter() {
+      ['histFrom','histTo','histKw'].forEach(function (id) {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      const sel = document.getElementById('histStation'); if (sel) sel.value = '';
+      historyPage = 1;
+      renderHistory();
+    }
+    function csvCell(v) {
+      const s = v == null ? '' : String(v);
+      return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }
+    function exportCsv() {
+      const rows = historyList();
+      if (!rows.length) { toast('没有可导出的记录'); return; }
+      const head = ['台位','编码','用户','开始时间','结束时间','计划分钟','实际分钟','费用(元)','续时次数'];
+      const lines = rows.map(function (s) {
+        const st = cache.stations.find(function (x) { return x.id === s.station_id; });
+        const mins = s.actual_minutes != null ? s.actual_minutes : s.planned_minutes;
+        return [
+          st ? st.name : ('台位#' + s.station_id), st ? st.code : '',
+          s.nickname || '微信用户', s.start_time || '', s.end_time || '',
+          s.planned_minutes, mins, feeNum(s).toFixed(2), extCount(s)
+        ].map(csvCell).join(',');
+      });
+      const csv = [head.join(',')].concat(lines).join('\r\n');
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '拼豆工坊-使用记录-' + todayStr() + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      toast('已导出 ' + rows.length + ' 条记录');
+    }
 
     // ============ 渲染：二维码 ============
     function renderQR() {
       const grid = document.getElementById('qrGrid');
+      if (!grid) return;
+      if (typeof qrcode !== 'function') {
+        // 二维码库来自 cdn.jsdelivr.net，加载失败时不能拖垮整页渲染
+        grid.innerHTML = '<div class="empty">二维码库加载失败<br/>' +
+          '<span style="font-size:12px;">需要联网访问 cdn.jsdelivr.net，请检查网络后刷新页面</span></div>';
+        return;
+      }
       if (!cache.stations.length) { grid.innerHTML = '<div class="empty">暂无台位</div>'; return; }
-      grid.innerHTML = cache.stations.map(s => {
+      grid.innerHTML = cache.stations.map(function (s) {
         const qr = qrcode(0, 'M');
         qr.addData(s.code);
         qr.make();
         return '<div class="qr-item">' + qr.createImgTag(4, 8) +
-               '<div class="name">' + s.name + '</div><div class="code">' + s.code + '</div></div>';
+          '<div class="name">' + esc(s.name) + '</div>' +
+          '<div class="code">' + esc(s.code) + '</div></div>';
       }).join('');
     }
 
     // ============ 渲染：设置 ============
+    function numOr(v, fallback) {
+      return (v === undefined || v === null || v === '') ? fallback : v;
+    }
     function renderSettings() {
-      document.getElementById('setPrice').value = cache.settings.price_per_hour || 30;
-      document.getElementById('setDefault').value = cache.settings.default_minutes || 60;
-      document.getElementById('setRemind').value = cache.settings.reminder_minutes || 10;
+      document.getElementById('setPrice').value = numOr(cache.settings.price_per_hour, 30);
+      document.getElementById('setDefault').value = numOr(cache.settings.default_minutes, 60);
+      document.getElementById('setRemind').value = numOr(cache.settings.reminder_minutes, 10);
     }
     async function saveSettings() {
-      cache.settings = {
-        price_per_hour: document.getElementById('setPrice').value || 30,
-        default_minutes: document.getElementById('setDefault').value || 60,
-        reminder_minutes: document.getElementById('setRemind').value || 10
-      };
-      try {
-        await API.put('settings', cache.settings);
-        toast('已保存'); renderOverview();
-      } catch (e) { toast('保存失败：' + e.message); await reload(); }
+      const price = Number(document.getElementById('setPrice').value);
+      const def = Number(document.getElementById('setDefault').value);
+      const remind = Number(document.getElementById('setRemind').value);
+      if (!isFinite(price) || price < 0) { toast('请填写有效的每小时价格'); return; }
+      if (!isFinite(def) || def <= 0) { toast('请填写有效的默认时长（大于 0）'); return; }
+      if (!isFinite(remind) || remind < 0) { toast('到时前提醒需为 0 或正数'); return; }
+      await withBusy(async function () {
+        const next = {
+          price_per_hour: price,
+          default_minutes: def,
+          reminder_minutes: remind
+        };
+        try {
+          await apiPut('settings', next);
+          cache.settings = next;
+          toast('已保存');
+          renderOverview();
+        } catch (e) { toast('保存失败：' + e.message); }
+      });
     }
 
     // ============ Tab 切换 ============
     function switchTab(name) {
-      document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
-      ['overview','stations','active','history','qr','settings'].forEach(t =>
-        document.getElementById('tab-' + t).classList.toggle('hidden', t !== name));
+      currentTab = name;
+      document.querySelectorAll('.tabs button').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.tab === name);
+      });
+      TABS.forEach(function (t) {
+        document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
+      });
       if (name === 'overview') renderOverview();
       if (name === 'stations') renderStations();
       if (name === 'active') { renderActive(); startActiveTimer(); }
-      if (name === 'history') renderHistory();
+      if (name === 'history') { renderHistStationOptions(); renderHistory(); }
       if (name === 'qr') renderQR();
       if (name === 'settings') renderSettings();
     }
     function startActiveTimer() {
       if (activeTimer) clearInterval(activeTimer);
-      activeTimer = setInterval(() => { if (!document.getElementById('tab-active').classList.contains('hidden')) renderActive(); }, 5000);
+      activeTimer = setInterval(function () {
+        if (!document.getElementById('tab-active').classList.contains('hidden') && !busy) renderActive();
+      }, 5000);
     }
 
     // ============ 启动 ============
-    async function reload() {
+    async function reload(opts) {
+      opts = opts || {};
+      if (busy) return;
       try {
-        await loadAll();
-        renderOverview(); renderStations(); renderActive(); renderHistory(); renderQR(); renderSettings();
-        toast('数据已加载');
+        await loadData();
+        renderOverview(); renderStations(); renderActive();
+        renderHistStationOptions(); renderHistory(); renderQR();
+        // 自动刷新时不重写设置表单，避免覆盖正在编辑的内容
+        if (!opts.skipSettings) renderSettings();
+        if (!opts.silent) toast('数据已加载');
       } catch (e) {
-        toast('加载失败：' + e.message + '（请检查服务器代理）');
+        if (!opts.silent) toast('加载失败：' + e.message + '（请检查服务器代理与网络）');
       }
     }
-    reload();
+
+    async function init() {
+      document.getElementById('repoSub').textContent =
+        '经服务器代理（' + location.host + '）· 数据存于 GitHub 仓库 repo/data/*.json';
+      await reload({ silent: true, skipSettings: false });
+      // 常开后自动同步（1 分钟一次），跳过设置页以免打断编辑
+      setInterval(function () {
+        if (document.hidden) return;
+        reload({ silent: true, skipSettings: currentTab === 'settings' });
+      }, 60000);
+    }
+    init();
   </script>
 </body>
 </html>

@@ -6,7 +6,7 @@ $file = 'repo/data/stations.json';
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         $r = gh_read($file);
-        echo json_encode(['data' => $r['content'] ?? []]);
+        echo json_encode(['data' => $r['content'] ?? [], 'writable' => write_enabled()]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => $e->getMessage()]);

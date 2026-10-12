@@ -55,6 +55,12 @@ function require_write_access() {
     }
 }
 
+// ---- 当前是否具备写能力：随 GET 响应下发给管理后台，用于显示「可写 / 只读」徽标 ----
+function write_enabled() {
+    global $READ_ONLY;
+    return !$READ_ONLY;
+}
+
 // ---- 轻量限流（按 IP，异常时静默放行，不影响主流程）----
 function rate_limit($key, $max = 60, $window = 60) {
     try {

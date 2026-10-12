@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         $r = gh_read($file);
         // 空/缺失时返回 {} 而非 []，保证前端按对象处理
-        echo json_encode(['data' => $r['content'] ?? new stdClass()]);
+        echo json_encode(['data' => $r['content'] ?? new stdClass(), 'writable' => write_enabled()]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => $e->getMessage()]);

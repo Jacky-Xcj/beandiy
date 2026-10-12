@@ -9,7 +9,7 @@
 | 部分 | 位置 | 技术 | 职责 |
 |------|------|------|------|
 | **用户端小程序** | `miniapp/` | 微信小程序 | 扫码登记、计时、到时提醒（弱绑定微信昵称，不收集手机） |
-| **电脑管理网页** | `admin/index.html` + `index.html` | 纯 HTML/JS | 数据概览、台位管理、使用中会话、历史、二维码、设置 |
+| **电脑管理网页** | `admin/index.html` + `index.html` | 纯 HTML/JS | 数据概览、台位占用总览、台位增删改、使用中会话与**续时（延长）**、强制结束、历史筛选与 CSV 导出、二维码打印、营业设置 |
 | **服务器代理** | `api/*.php` | PHP 8+ | 持有 PAT-A，校验请求，经 GitHub Contents API 读写数据 |
 | **后端数据存储** | `repo/data/*.json` + GitHub | GitHub 仓库即数据库 | 数据以 JSON 文件存于仓库 `repo/` 子目录 |
 
@@ -104,8 +104,19 @@ globalData: {
 1. 管理员在 `repo/data/stations.json` 建好台位（也可在管理网页添加）
 2. 管理网页「二维码」页打印台位二维码，张贴在桌上
 3. 顾客打开小程序 → 点「扫码登记使用」→ 扫台位码 → 微信授权昵称 → 选时长 → 开始计时
-4. 倒计时页面实时显示剩余时间，到时震动 + 提示音 + 弹窗，可「延长」或「结束」
-5. 管理员在网页查看概览、使用中会话、历史记录
+4. 倒计时页面实时显示剩余时间，到时震动 + 提示音 + 弹窗，并提示「如需继续使用请联系工作人员办理续时」
+5. 顾客需要继续使用 → 工作人员在管理网页「使用中」点「**延长**」（+15/+30/+60/+90 分钟或自定义）→ 顾客切回小程序即看到新的剩余时间与新的预计结束时间
+6. 结束时由工作人员「结束」，或顾客在小程序内自行结束
+7. 管理员在网页查看概览、使用中会话、历史记录（可筛选、导出 CSV）
+
+### 权限模型：谁能延长
+
+**续时是门店的经营动作，只能由工作人员在管理后台操作**，用户端不提供自助延长：
+
+- 小程序计时页已**移除**「延长使用」按钮，改为止时弹窗 + 遮罩提示「联系店内工作人员办理续时」。
+- 顾客切回小程序时（`onShow`）会拉取最新会话：后台续时 → 自动按新时长重算剩余时间、清除「时间到」状态并提示「已续时 N 分钟」；后台强制结束 → 提示并回到首页。
+- 后台每次续时都会在该条使用记录里追加一条 `extensions` 明细（分钟数 / 时间 / 操作者 / 备注），便于对账。
+- 未来若上线「购买套餐自动续时」，`miniapp/utils/api.js` 的 `extendSession()` 仍作为底层能力保留，可直接复用。
 
 ## 二维码说明
 
@@ -124,14 +135,21 @@ globalData: {
   "id": 1, "station_id": 1, "station_name": "A1 拼豆台位",
   "nickname": "微信用户昵称", "avatar": null,
   "start_time": "ISO时间", "end_time": null,
-  "planned_minutes": 60, "actual_minutes": null, "status": "active|completed"
+  "planned_minutes": 60, "actual_minutes": null, "status": "active|completed",
+  "extensions": [
+    { "minutes": 30, "at": "ISO时间", "by": "admin", "note": "购买加时套餐" }
+  ]
 }
 ```
 
+> `extensions` 由管理后台「延长」时追加，仅用于对账展示（列表里显示「已续 N 次」，鼠标悬停看明细）。旧记录没有该字段，读取时按空数组处理。`planned_minutes` 已是续时后的总时长。
+
 **设置** `repo/data/settings.json`：
 ```json
-{ "price_per_hour": "30", "default_minutes": "60", "reminder_minutes": "10" }
+{ "price_per_hour": 30, "default_minutes": 60, "reminder_minutes": 10 }
 ```
+
+> 均为**数字**类型（管理后台保存时统一转换）。`default_minutes` 决定顾客扫码登记时的初始时长；`reminder_minutes` 是到时前提醒分钟数，**填 `0` 表示完全不提醒**。
 
 ## 安全小结
 
