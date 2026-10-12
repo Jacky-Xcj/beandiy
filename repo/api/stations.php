@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     rate_limit('stations_put_' . ($_SERVER['REMOTE_ADDR'] ?? 'x'));
     require_admin_key();
+    require_write_access();
     $input = json_decode(file_get_contents('php://input'), true);
     if (!is_array($input)) {
         http_response_code(400);

@@ -45,6 +45,16 @@ function require_admin_key() {
     }
 }
 
+// ---- 写操作闸门：pat_a 未配置时禁止写入（匿名只读模式下会打到 GitHub 拿 401，信息不明确）----
+function require_write_access() {
+    global $READ_ONLY;
+    if ($READ_ONLY) {
+        http_response_code(401);
+        echo json_encode(['error' => '只读模式：未配置 pat_a，写入需在 config.php 填入 PAT-A']);
+        exit;
+    }
+}
+
 // ---- 轻量限流（按 IP，异常时静默放行，不影响主流程）----
 function rate_limit($key, $max = 60, $window = 60) {
     try {
@@ -70,7 +80,10 @@ function rate_limit($key, $max = 60, $window = 60) {
 // ---- GitHub Contents 客户端（仅服务器端调用）----
 function gh_call($path, $method = 'GET', $body = null) {
     global $CFG;
-    $url = 'https://api.github.com/repos/' . $CFG['owner'] . '/' . $CFG['repo']
+    // API 基址可通过 config 的 gh_base 覆盖（默认 api.github.com）。
+    // 用途：GitHub Enterprise，或本地 mock 做端到端写入测试。
+    $base = rtrim($CFG['gh_base'] ?? 'https://api.github.com', '/');
+    $url = $base . '/repos/' . $CFG['owner'] . '/' . $CFG['repo']
          . '/contents/' . ltrim($path, '/') . '?ref=' . $CFG['branch'];
     $ch = curl_init($url);
     $headers = [
@@ -96,6 +109,11 @@ function gh_call($path, $method = 'GET', $body = null) {
     return ['code' => $code, 'body' => json_decode($resp, true)];
 }
 
+// ---- 数据文件序列化（统一格式，PHP 与 Node 两版实现必须一致）----
+function encode_json($data) {
+    return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . "\n";
+}
+
 function gh_read($path) {
     try { $r = gh_call($path, 'GET'); }
     catch (Exception $e) { return ['content' => null, 'sha' => null]; }
@@ -108,9 +126,11 @@ function gh_read($path) {
 function gh_write($path, $data, $message = '') {
     global $CFG;
     $cur = gh_read($path);
+    // 序列化约定：4 空格缩进 + 结尾换行 + 不转义中文/斜杠，且与 dev-server.mjs 保持完全一致。
+    // 目的：仅改动的内容产生 diff，避免整文件被重写为另一种格式（git 历史噪音）。
     $payload = [
         'message' => $message ?: ('update ' . $path),
-        'content' => base64_encode(json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)),
+        'content' => base64_encode(encode_json($data)),
         'branch'  => $CFG['branch'],
     ];
     if ($cur['sha']) $payload['sha'] = $cur['sha'];
