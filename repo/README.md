@@ -1,5 +1,9 @@
 # 拼豆工坊（BeanDIY）
 
+> ⚠️ **【LEGACY / 已停用】** 本文件描述的是 2026-11-09 重构前的 GitHub + PHP 架构，
+> 不要再按它部署。当前架构见项目根目录 `README.md` / `ARCHITECTURE.md`，
+> 停用说明见本目录 `DEPRECATED.md`。
+
 扫码登记、计时使用、到时提醒的拼豆店小程序。**GitHub 仓库即数据库**；管理网页是单文件静态页面，支持两种部署：**方案 A 无服务器**（GitHub Pages，浏览器直连 GitHub API）或**方案 B 自备 PHP 代理**（令牌不下发到浏览器）。
 
 > 安全底线：小程序与管理网页都只用一把 **仅限 `repo/data/**` 读写**的 fine-grained PAT（PAT-B）。
